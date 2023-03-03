@@ -1,0 +1,118 @@
+{% extends 'layout.html' %}
+
+{% block title %} Create tech {% endblock %}
+
+{% block body %}
+
+<body class="aside-mini">
+    <b class="screen-overlay"></b>
+    <aside class="navbar-aside" id="offcanvas_aside">
+        <nav>
+            <ul class="menu-aside">
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('tickets') }}"><i
+                            class="icon material-icons md-sticky_note_2"></i>
+                        <span class="text">Tickets</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('reports') }}"><i
+                            class="icon material-icons md-pie_chart"></i>
+                        <span class="text">Reports</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
+                        <span class="text">Create new</span>
+                    </a>
+                </li>
+                <hr>
+                <li class="menu-item active">
+                    <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
+                            class="icon material-icons md-settings"></i>
+                        <span class="text">Settings</span>
+                    </a>
+                </li>
+                <br>
+                <br>
+        </nav>
+
+    </aside>
+    <main class="main-wrap">
+        <section class="content-main">
+            <div class="content-header">
+                <h2 class="content-title">Manage Organizations</h2>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row gx-5">
+                        <aside class="col-lg-3 border-end">
+                            <nav class="nav nav-pills flex-lg-column mb-4">
+                                <a class="nav-link" aria-current="page" href="{{ url_for('admin_settings') }}">Your
+                                    Profile</a>
+                                <a class="nav-link" href="{{ url_for('manage_organizations') }}">Manage
+                                    Organizations</a>
+                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add
+                                    Organization</a>
+                                <a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a>
+                                <a class="nav-link" href="{{ url_for('add_user') }}">Add Users</a>
+                                <a class="nav-link" href="{{ url_for('manage_tech') }}">Manage Tech</a>
+                                <a class="nav-link" href="{{ url_for('add_tech') }}">Add Tech</a>
+                                <a class="nav-link" href="{{ url_for('manage_locations') }}">Manage Locations</a>
+                                <a class="nav-link active" href="{{ url_for('add_location') }}">Add Location</a>
+                            </nav>
+
+                        </aside>
+                        <div class="col-lg-9">
+                            <section class="content-body p-xl-4">
+                                <form action="/add_location" , method="POST">
+                                    <section class="content-main">
+                                        <div class="content-header">
+                                            <h2 class="content-title">Create new location</h2>
+                                            <button type="submit" class="btn btn-primary">Create
+                                                location</button>
+                                        </div>
+                                        <div class="card mb-4">
+                                            <div class="card-body">
+                                                <div class="mb-4">
+                                                    <label class="form-label">Location</label>
+                                                    <input type="text" placeholder="Location name" id="location"
+                                                        name="location" class="form-control" required></input>
+                                                </div>
+                                                <div>
+                                                    <label for="org" class="form-label">Organization</label>
+                                                    <select class="form-select" name="org" id="org" required>
+                                                    </select>
+                                                </div>
+                                    </section>
+                                </form>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script>
+        $.get('{{ url_for("get_orgs") }}', function (data) {
+            let names = []
+            $('org').empty();
+            let orgs = $.parseJSON(data);
+            let num_entires = Object.keys(orgs).length;
+            for (let i = 0; i < num_entires; ++i) {
+                let org = orgs[i];
+                console.log(org);
+                let name = org['name'];
+                names.push(name);
+            }
+            var str = ""
+            for (var org of names) {
+                str += "<option>" + org + "</option>"
+            }
+            console.log(str);
+            document.getElementById("org").innerHTML = str;
+        });
+    </script>
+</body>
+{% endblock %}

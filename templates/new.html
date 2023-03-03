@@ -1,0 +1,187 @@
+{% extends 'layout.html' %}
+
+{% block title %} New ticket {% endblock %}
+
+{% block body %}
+<!-- todo: auto select creator and requester -->
+
+<body class="aside-mini">
+    <b class="screen-overlay"></b>
+    <aside class="navbar-aside" id="offcanvas_aside">
+        <nav>
+            <ul class="menu-aside">
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('tickets') }}"><i
+                            class="icon material-icons md-sticky_note_2"></i>
+                        <span class="text">Tickets</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('reports') }}"><i
+                            class="icon material-icons md-pie_chart"></i>
+                        <span class="text">Reports</span>
+                    </a>
+                </li>
+                <li class="menu-item active">
+                    <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
+                        <span class="text">Create new</span>
+                    </a>
+                </li>
+                <hr>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
+                            class="icon material-icons md-settings"></i>
+                        <span class="text">Settings</span>
+                    </a>
+                </li>
+                <br>
+                <br>
+        </nav>
+    </aside>
+
+    <main class="main-wrap">
+        <form action="/new" , method="POST">
+            <section class="content-main">
+                <div class="content-header">
+                    <h2 class="content-title">Create new ticket</h2>
+                    <button type="submit" class="btn btn-primary">Submit ticket</button>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row gx-2">
+                            <div class="col-sm-6">
+                                <div class="mb-4">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" placeholder="Title.." id="title" name="title"
+                                        class="form-control" maxlength="40" rows="4" required></input>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="date" class="form-label">Date created
+                                    (mm/dd/yyyy)</label><br>
+                                <input type="datetime-local" name="date" id="date" required class="date">
+                            </div>
+                        </div>
+
+                        <div class="row gx-2">
+                            <div class="col-sm-6">
+                                <div class="mb-4">
+                                    <label for="creator" class="form-label">Creator</label>
+                                    <select class="form-select" name="creator" id="creator" required>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="mb-4">
+                                    <label for="org" class="form-label">Organization</label>
+                                    <select class="form-select" name="org" id="org" required>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Description</label>
+                            <textarea placeholder="Description.." id="desc" class="form-control" rows="4" name="desc"
+                                required></textarea>
+                        </div>
+                        <div class="row gx-2">
+                            <div class="col-sm-6">
+                                <div class="mb-4">
+                                    <label for="requester" class="form-label">Requester</label>
+                                    <select class="form-select" name="requester" id="requester" required>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="mb-4">
+                                    <label for="location" class="form-label">Location</label>
+                                    <select class="form-select" name="location" id="location" required>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row gx-2">
+                            <div class="col-sm-6">
+                                <div class="mb-2">
+                                    <label for="priority" class="form-label">Priority</label>
+                                    <select class="form-select" name="priority" id="priority" required>
+                                        <option value="High">High</option>
+                                        <option value="Medium">Medium</option>
+                                        <option value="Low">Low</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="mb-2">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" name="status" id="status" required>
+                                        <option value="Open">Open</option>
+                                        <option value="Closed">Closed</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- card end// -->
+            </section>
+        </form>
+    </main>
+    <script>
+        let today = new Date();
+        today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+        document.getElementById('date').value = today.toISOString().slice(0, 16);
+
+        $.get('{{ url_for("get_orgs") }}', function (data) {
+            let names = []
+            $('org').empty();
+            let orgs = $.parseJSON(data);
+            let num_entires = Object.keys(orgs).length;
+            for (let i = 0; i < num_entires; ++i) {
+                let org = orgs[i];
+                let name = org['name'];
+                names.push(name);
+            }
+            var str = ""
+            for (var org of names) {
+                str += "<option>" + org + "</option>"
+            }
+            console.log(str);
+            document.getElementById("org").innerHTML = str;
+        });
+
+        $.get('{{ url_for("get_all") }}', function (data) {
+            let people = $.parseJSON(data);
+            let num_entires = Object.keys(people).length;
+            str = "";
+            for (let i = 0; i < num_entires; ++i) {
+                let person = people[i];
+                str += "<option>" + person['name'] + "</option>"
+            }
+            console.log(str);
+            document.getElementById("creator").innerHTML = str;
+            document.getElementById("requester").innerHTML = str;
+
+        });
+
+
+        $.get('{{ url_for("get_locations") }}', function (data) {
+            let names = []
+            $('location').empty();
+            let locations = $.parseJSON(data);
+            let num_entires = Object.keys(locations).length;
+            for (let i = 0; i < num_entires; ++i) {
+                let location = locations[i];
+                let name = location['location'];
+                names.push(name);
+            }
+            var str = ""
+            for (var n of names) {
+                str += "<option>" + n + "</option>"
+            }
+            document.getElementById("location").innerHTML = str;
+        });
+    </script>
+</body>
+
+{% endblock %}

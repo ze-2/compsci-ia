@@ -1,0 +1,269 @@
+{% extends 'layout.html' %}
+
+{% block title %} Homepage {% endblock %}
+
+{% block body %}
+
+<body class="aside-mini">
+    <b class="screen-overlay"></b>
+    <aside class="navbar-aside" id="offcanvas_aside">
+        <nav>
+            <ul class="menu-aside">
+                <li class="menu-item active">
+                    <a class="menu-link" href="{{ url_for('user') }}"><i class="icon material-icons md-person"></i>
+                        <span class="text">Tickets</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('new_ticket_user') }}"><i
+                            class="icon material-icons md-plus"></i>
+                        <span class="text">Create new</span>
+                    </a>
+                </li>
+                <hr>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('user_settings') }}"><i
+                            class="icon material-icons md-settings"></i>
+                        <span class="text">Settings</span>
+                    </a>
+                </li>
+                <br>
+                <br>
+        </nav>
+    </aside>
+
+    <main class="main-wrap">
+        <section class="content-main">
+            <div class="content-header">
+                <h2 class="content-title">Tickets</h2>
+                <div>
+                    <a href="{{ url_for('new_ticket_user') }}"
+                        onclick="this.blur();window.open(this.href, '_blank');return false;" class="btn btn-primary"><i
+                            class="material-icons md-plus" target="_blank"></i>
+                        Create
+                        new</a>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Priority</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Created</th>
+                                    <th scope="col">Updated</th>
+                                    <th scope="col" class="text-end">Actions</th>
+
+                                </tr>
+                            </thead>
+                            <tbody id="table-content">
+                            </tbody>
+                        </table>
+                        <a href="#" class="btn btn-light">Back to top</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <form action="{{ url_for('user') }}" , method="POST">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="modalLabel"></h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="modal-body">
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-danger">Delete
+                                ticket</button>
+                            <button type="button" onclick="edit();" class="btn btn-light">Edit</button>
+                            <button type="submit" id="submit" class="btn btn-primary" disabled>Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </main>
+    <script>
+        render_table();
+
+        function render_table() {
+            let table = document.getElementById('table-content');
+            table.innerHTML = '';
+            $.get('{{ url_for("get_user_tickets") }}', function (data) {
+                let tickets = $.parseJSON(data);
+                let num_entires = Object.keys(tickets).length;
+                for (let i = 0; i < num_entires; ++i) {
+                    let ticket = tickets[i];
+                    let id = ticket['id'];
+                    let title = ticket['title'];
+                    let desc = ticket['description'];
+                    let assignee = ticket['assignee'];
+                    let priority = ticket['priority'];
+                    let status = ticket['status'];
+                    let contact = ticket['contact'];
+                    let created = ticket['created'];
+                    let created_date = created.split("T")[0];
+                    let updated = ticket['updated'];
+                    let updated_date = 'null';
+                    if (updated) {
+                        updated_date = updated.split("T")[0];
+                    } else {
+                        updated_date = updated;
+                    }
+                    let priority_class = 'alert-info';
+                    let status_class = 'alert-info'
+                    if (priority === 'High') {
+                        priority_class = 'alert-danger';
+                    } else if (priority === 'Medium') {
+                        priority_class = 'alert-warning';
+                    } else {
+                        priority_class = 'alert-success';
+                    }
+                    if (status === 'Open') {
+                        status_class = 'alert-danger';
+                    } else {
+                        status_class = 'alert-success';
+                    }
+
+                    table.innerHTML += `
+                    <tr>
+                        <td>` + id + `</td>
+                        <td>` + title + `</td>
+                        <td><span class="badge rounded-pill ` + priority_class + `">` + priority + `</span></td>
+                        <td><span class="badge rounded-pill ` + status_class + `">` + status + `</span></td>
+                        <td>` + created_date + `</td>
+                        <td>` + updated_date + `</td>
+                        <td class="text-end">
+                            <button data-bs-toggle="modal" data-bs-target="#modal" id="` + id + `"
+                                onclick="display(this.id);" class="btn btn-light">More</button>
+                        </td>
+                    </tr>`;
+                }
+            });
+        }
+
+
+        function display(id) {
+            $.get('{{ url_for("get_ticket") }}' + '?id=' + id, function (data) {
+                let tickets = $.parseJSON(data);
+                let num_entires = Object.keys(tickets).length;
+                to_display = num_entires;
+                for (let i = 0; i < to_display; ++i) {
+                    let ticket = tickets[i];
+                    let id = ticket['id'];
+                    let title = ticket['title'];
+                    let desc = ticket['description'];
+                    let assignee = ticket['assignee'];
+                    let priority = ticket['priority'];
+                    let status = ticket['status'];
+                    let contact = ticket['contact'];
+                    let created = ticket['created'];
+                    let updated = ticket['updated'];
+                    document.getElementById('modalLabel').innerHTML = title + " (#" + id + ")";
+                    document.getElementById('modal-body').innerHTML = `<div class="row gx-2">
+                        <div class="mb-4">
+                            <label class="form-label">Title</label>
+                            <input type="text" value="` + title + `" id="title" name="title" class="form-control" maxlength="40" rows="4" required
+                                readonly></input>
+                        </div>
+                    </div>
+                    <div class="row gx-2">
+                        <div class="col-sm-6">
+                            <div class="mb-4">
+                                <label for="date" class="form-label">Date created (mm/dd/yyyy)</label><br>
+                                <input type="datetime-local" value="` + created + `" name="created" id="created"
+                                    required class="date" readonly>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                                <label for="date" class="form-label">Date updated (mm/dd/yyyy)</label><br>
+                                <input type="datetime-local" value="` + updated + `" name="updated" id="updated" required
+                                    class="date" readonly
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Description</label>
+                        <textarea id="desc" class="form-control" rows="4" name="desc"
+                            required readonly>` + desc + `</textarea>
+                    </div>
+                    <div class="row gx-2">
+                        <div class="col-sm-6">
+                            <div class="mb-4">
+                                <label for="contact" class="form-label">Contact</label>
+                                <select class="form-select" name="contact" value="` + contact + `" id="contact" required disabled>
+                                    <option value="person a"> person a </option>
+                                    <option value="person b"> person b </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="mb-4">
+                                <label for="assignee" class="form-label">Assignee</label>
+                                <select class="form-select" name="assignee" id="assignee" required disabled>
+                                    <option value="person a"> person a </option>
+                                    <option value="person b"> person b </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row gx-2">
+                        <div class="col-sm-6">
+                            <div class="mb-2">
+                                <label for="priority" class="form-label">Priority</label>
+                                <select class="form-select" name="priority" id="priority" required disabled>
+                                    <option value="High">High</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="mb-2">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" name="status" id="status" required disabled>
+                                    <option value="Open">Open</option>
+                                    <option value="Closed">Closed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <input class="form-control" id="uid" name="uid" type="hidden" value=` + id + ` readonly>
+                        </div>
+                    </div>
+                    `
+                    let today = new Date();
+                    today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+                    document.getElementById('updated').value = today.toISOString().slice(0, 16);
+                }
+            });
+        }
+
+        function edit() {
+            event.preventDefault();
+            document.getElementById('updated').removeAttribute('readonly');
+            document.getElementById('created').removeAttribute('readonly');
+            document.getElementById('title').removeAttribute('readonly');
+            document.getElementById('desc').removeAttribute('readonly');
+
+            document.getElementById('contact').removeAttribute('disabled');
+            document.getElementById('assignee').removeAttribute('disabled');
+            document.getElementById('priority').removeAttribute('disabled');
+            document.getElementById('status').removeAttribute('disabled');
+
+            document.getElementById('submit').disabled = false;
+            document.getElementById('submit').classList = 'btn btn-primary';
+        }
+    </script>
+</body>
+{% endblock %}

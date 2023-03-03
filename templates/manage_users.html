@@ -1,0 +1,216 @@
+{% extends 'layout.html' %}
+
+{% block title %} Manage users {% endblock %}
+
+{% block body %}
+
+<body class="aside-mini">
+
+    <b class="screen-overlay"></b>
+    <aside class="navbar-aside" id="offcanvas_aside">
+        <nav>
+            <ul class="menu-aside">
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('tickets') }}"><i
+                            class="icon material-icons md-sticky_note_2"></i>
+                        <span class="text">users</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('reports') }}"><i
+                            class="icon material-icons md-pie_chart"></i>
+                        <span class="text">Reports</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
+                        <span class="text">Create new</span>
+                    </a>
+                </li>
+                <hr>
+                <li class="menu-item active">
+                    <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
+                            class="icon material-icons md-settings"></i>
+                        <span class="text">Settings</span>
+                    </a>
+                </li>
+                <br>
+                <br>
+        </nav>
+    </aside>
+    <main class="main-wrap">
+        <section class="content-main">
+            <div class="content-header">
+                <h2 class="content-title">Manage users</h2>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row gx-5">
+                        <aside class="col-lg-3 border-end">
+                            <nav class="nav nav-pills flex-lg-column mb-4">
+                                <a class="nav-link" aria-current="page" href="{{ url_for('admin_settings') }}">Your
+                                    Profile</a>
+                                <a class="nav-link" href="{{ url_for('manage_organizations') }}">Manage
+                                    Organizations</a>
+                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add
+                                    Organization</a>
+                                <a class="nav-link active" href="{{ url_for('manage_users') }}">Manage Users</a>
+                                <a class="nav-link" href="{{ url_for('add_user') }}">Add
+                                    Users</a>
+                                <a class="nav-link" href="{{ url_for('manage_tech') }}">Manage Tech</a>
+                                <a class="nav-link" href="{{ url_for('add_tech') }}">Add
+                                    Tech</a>
+                            </nav>
+                        </aside>
+                        <div class="col-lg-9">
+                            <section class="content-body p-xl-4">
+                                <div class="table-responsive" style="overflow-x: auto;">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>#ID</th>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Email</th>
+                                                <th scope="col">Organization</th>
+                                                <th scope="col">Password</th>
+                                                <th scope="col" class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-content">
+                                        </tbody>
+                                    </table>
+                                    <a href="#" class="btn btn-light">Back to top</a>
+                                </div>
+                            </section>
+                        </div>
+                        <!-- Modal -->
+                        <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                    <form action="{{ url_for('manage_users') }}" , method="POST">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="modalLabel"></h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body" id="modal-body">
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-danger">Delete
+                                                organization</button>
+                                            <button type="button" onclick="edit();" class="btn btn-light">Edit</button>
+                                            <button type="submit" id="submit" class="btn btn-primary" disabled>Save
+                                                changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </main>
+    <script>
+        let table = document.getElementById('table-content');
+        render_table();
+
+        function render_table() {
+            table.innerHTML = '';
+            $.get('{{ url_for("get_users") }}', function (data) {
+                let users = $.parseJSON(data);
+                let num_entires = Object.keys(users).length;
+                to_display = num_entires;
+                for (let i = 0; i < to_display; ++i) {
+                    let user = users[i];
+                    let id = user['id'];
+                    let name = user['name'];
+                    let email = user['email'];
+                    let password = user['password'];
+                    let org = user['organization'];
+
+                    table.innerHTML += ` <tr>
+            <td>` + id + `</td>
+            <td>` + name + `</td>
+            <td>` + email + `</td>
+            <td>` + org + `</td>
+            <td><span class="spoiler">` + password + `</span></td>
+            <td class="text-end">
+                <button data-bs-toggle="modal" data-bs-target="#modal" id="` + id + `" onclick="display(this.id);" class="btn btn-light">More</button
+            </td>
+            </tr>`;
+                }
+            });
+        }
+
+        function render_orgs(val) {
+            $.get('{{ url_for("get_orgs") }}', function (data) {
+                let form = document.getElementById('org');
+                let orgs = $.parseJSON(data);
+                let num_entires = Object.keys(orgs).length;
+                to_display = num_entires;
+                for (let i = 0; i < to_display; ++i) {
+                    let org = orgs[i];
+                    let newOption = new Option(org['name'], org['name'])
+                    form.add(newOption, undefined);
+                }
+                form.value = val;
+            });
+        }
+
+        function display(id) {
+            $.get('{{ url_for("get_user") }}' + '?uid=' + id, function (data) {
+                let users = $.parseJSON(data);
+                let user = users[0];
+                console.log(user);
+                let uid = user['id'];
+                let name = user['name'];
+                let email = user['email'];
+                let password = user['password'];
+                let org = user['organization'];
+                document.getElementById('modalLabel').innerHTML = name + " (#" + uid + ")";
+                document.getElementById('modal-body').innerHTML = `
+                    <div class="row">
+                        <div class="row gx-3">
+                            <div class="col-lg-6  mb-3">
+                                <label class="form-label">Name</label>
+                                <input id="name" name="name" class="form-control" type="text" value="` + name + `"
+                                    readonly>
+                            </div>
+                            <div class="col-lg-6  mb-3">
+                                <label class="form-label">Email</label>
+                                <input class="form-control" name="email" type="email" id="email" value="` + email + `"
+                                    readonly>
+                            </div>
+                            <div class="col-lg-6  mb-3">
+                                <label class="form-label">Password</label>
+                                <input class="form-control" name="password" type="text"
+                                    id="password" value="` + password + `" readonly>
+                            </div>
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label">Organization</label>
+                                <select id="org" class="form-select" name="org" id="contact" required disabled>
+                                </select>
+                            </div>
+                            <div class="col-lg-6 mb-3">
+                                <input class="form-control" id="uid" name="uid" type="hidden" value=` + uid + ` readonly>
+                            </div>`;
+                render_orgs(org);
+            });
+        }
+
+        function edit() {
+            event.preventDefault();
+            document.getElementById('name').removeAttribute('readonly');
+            document.getElementById('password').removeAttribute('readonly');
+            document.getElementById('email').removeAttribute('readonly');
+            document.getElementById('org').removeAttribute('disabled');
+
+            document.getElementById('submit').disabled = false;
+            document.getElementById('submit').classList = 'btn btn-primary';
+        }
+    </script>
+</body>
+{% endblock %}

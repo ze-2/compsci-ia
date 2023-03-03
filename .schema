@@ -1,0 +1,47 @@
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email STRING,
+    name STRING,
+    password STRING,
+    type STRING,
+    organization STRING
+);
+
+-- possible roles
+-- - admin
+-- - user
+-- - tech
+
+CREATE TABLE organizations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name STRING,
+    email STRING,
+    type STRING -- either customer or service
+);
+
+CREATE TABLE tickets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title STRING,
+    description STRING,
+    requester STRING, -- get rid of 'assignee'
+    creator STRING, -- collect from user (name)
+    organization STRING, -- collect from user
+    priority STRING,
+    status STRING,
+    -- contact STRING, (get rid of contact)
+    created DATETIME, -- collect on form submission
+    updated DATETIME, -- collect on form update
+    location STRING -- new
+);
+
+CREATE TABLE locations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    location STRING,
+    organization STRING
+);
+
+insert into users (email, name, password, type, organization) values ("x@email.com", "john", "x", "user", "org x");
+
+insert into users (email, name, password, type, organization) values ("a@email.com", "john", "a", "admin", "org y");
+
+insert into tickets (title, description, requester, creator, organization, priority, created, status, location) values ("hi", "desc", "me", "you", "org1", "High", "1914-12-20T08:00", "Open", "cry");

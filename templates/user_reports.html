@@ -1,0 +1,141 @@
+{% extends 'layout.html' %}
+
+{% block title %} Reports {% endblock %}
+
+{% block body %}
+
+<body class="aside-mini">
+
+    <b class="screen-overlay"></b>
+    <aside class="navbar-aside" id="offcanvas_aside">
+        <nav>
+            <ul class="menu-aside">
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('tickets') }}"><i
+                            class="icon material-icons md-sticky_note_2"></i>
+                        <span class="text">users</span>
+                    </a>
+                </li>
+                <li class="menu-item active">
+                    <a class="menu-link" href="{{ url_for('reports') }}"><i
+                            class="icon material-icons md-pie_chart"></i>
+                        <span class="text">Reports</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
+                        <span class="text">Create new</span>
+                    </a>
+                </li>
+                <hr>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
+                            class="icon material-icons md-settings"></i>
+                        <span class="text">Settings</span>
+                    </a>
+                </li>
+                <br>
+                <br>
+        </nav>
+    </aside>
+    <main class="main-wrap">
+        <section class="content-main">
+            <div class="content-header">
+                <h2 class="content-title">Reports</h2>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row gx-5">
+                        <aside class="col-lg-3 border-end">
+                            <nav class="nav nav-pills flex-lg-column mb-4">
+                                <a class="nav-link active" aria-current="page" href="{{ url_for('reports') }}">User
+                                    reports</a>
+                                <a class="nav-link" href="{{ url_for('tech_reports') }}">Tech reports</a>
+                            </nav>
+                        </aside>
+                        <div class="col-lg-9">
+                            <section class="content-body p-xl-4">
+                                <div class="table-responsive" style="overflow-x: auto;">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>#ID</th>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Email</th>
+                                                <th scope="col">Organization</th>
+                                                <th scope="col" class="text-end">Report</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-content">
+                                        </tbody>
+                                    </table>
+                                    <a href="#" class="btn btn-light">Back to top</a>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+        <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="modalLabel"></h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="modal-body">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        let table = document.getElementById('table-content');
+        render_table();
+
+        function render_table() {
+            table.innerHTML = '';
+            $.get('{{ url_for("get_users") }}', function (data) {
+                let users = $.parseJSON(data);
+                let num_entires = Object.keys(users).length;
+                to_display = num_entires;
+                for (let i = 0; i < to_display; ++i) {
+                    let user = users[i];
+                    let id = user['id'];
+                    let name = user['name'];
+                    let email = user['email'];
+                    let org = user['organization'];
+
+                    table.innerHTML += ` <tr>
+            <td>` + id + `</td>
+            <td>` + name + `</td>
+            <td>` + email + `</td>
+            <td>` + org + `</td>
+            <td class="text-end">
+                <button data-bs-toggle="modal" data-bs-target="#modal" id="` + id + `" onclick="display(this.id);" class="btn btn-light">View report</button
+            </td>
+            </tr>`;
+                }
+            });
+        }
+
+        function display(id) {
+            $.get('{{ url_for("get_report_user") }}' + '?uid=' + id, function (data) {
+                let users = $.parseJSON(data);
+                let user = users[0];
+                console.log(user);
+                let uid = user['id'];
+                let name = user['name'];
+                let email = user['email'];
+                let org = user['organization'];
+                document.getElementById('modalLabel').innerHTML = name + " (#" + uid + ")";
+                document.getElementById('modal-body').innerHTML = ``;
+                render_orgs(org);
+            });
+        }
+    </script>
+</body>
+{% endblock %}

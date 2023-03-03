@@ -1,0 +1,193 @@
+{% extends 'layout.html' %}
+
+{% block title %} Manage organizations {% endblock %}
+
+{% block body %}
+<!-- TODO: LOCATION -->
+<body class="aside-mini">
+
+    <b class="screen-overlay"></b>
+    <aside class="navbar-aside" id="offcanvas_aside">
+        <nav>
+            <ul class="menu-aside">
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('tickets') }}"><i
+                            class="icon material-icons md-sticky_note_2"></i>
+                        <span class="text">Tickets</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('reports') }}"><i
+                            class="icon material-icons md-pie_chart"></i>
+                        <span class="text">Reports</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
+                        <span class="text">Create new</span>
+                    </a>
+                </li>
+                <hr>
+                <li class="menu-item active">
+                    <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
+                            class="icon material-icons md-settings"></i>
+                        <span class="text">Settings</span>
+                    </a>
+                </li>
+                <br>
+                <br>
+        </nav>
+    </aside>
+    <main class="main-wrap">
+        <section class="content-main">
+            <div class="content-header">
+                <h2 class="content-title">Manage Organizations</h2>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row gx-5">
+                        <aside class="col-lg-3 border-end">
+                            <nav class="nav nav-pills flex-lg-column mb-4">
+                                <a class="nav-link" aria-current="page" href="{{ url_for('admin_settings') }}">Your
+                                    Profile</a>
+                                <a class="nav-link active" href="{{ url_for('manage_organizations') }}">Manage
+                                    Organizations</a>
+                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add
+                                    Organization</a>
+                                <a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a>
+                                <a class="nav-link" href="{{ url_for('add_user') }}">Add
+                                    Users</a>
+                                <a class="nav-link" href="{{ url_for('manage_tech') }}">Manage Tech</a>
+                                <a class="nav-link" href="{{ url_for('add_tech') }}">Add
+                                    Tech</a> </nav>
+
+                        </aside>
+                        <div class="col-lg-9">
+
+                            <section class="content-body p-xl-4">
+                                <div class="table-responsive" style="overflow-x: auto;">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>#ID</th>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Email</th>
+                                                <th scope="col">Type</th>
+                                                <th scope="col" class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-content">
+                                        </tbody>
+                                    </table>
+                                    <a href="#" class="btn btn-light">Back to top</a>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Modal -->
+        <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <form action="{{ url_for('manage_organizations') }}" , method="POST">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="modalLabel"></h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="modal-body">
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-danger">Delete organization</button>
+                            <button type="button" onclick="edit();" class="btn btn-light">Edit</button>
+                            <button type="submit" id="submit" class="btn btn-primary" disabled>Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        let table = document.getElementById('table-content');
+        render_table();
+
+        function render_table() {
+            table.innerHTML = '';
+            $.get('{{ url_for("get_orgs") }}', function (data) {
+                let tickets = $.parseJSON(data);
+                let num_entires = Object.keys(tickets).length;
+                to_display = num_entires;
+                for (let i = 0; i < to_display; ++i) {
+                    let ticket = tickets[i];
+                    console.log(ticket);
+                    let id = ticket['id'];
+                    let name = ticket['name'];
+                    let email = ticket['email'];
+                    let type = ticket['type'];
+                    table.innerHTML += ` <tr>
+            <td>` + id + `</td>
+            <td>` + name + `</td>
+            <td>` + email + `</td>
+            <td>` + type + `</td>
+            <td class="text-end">
+                <button data-bs-toggle="modal" data-bs-target="#modal" id="` + id + `" onclick="display(this.id);" class="btn btn-light">More</button
+            </td>
+            </tr>`;
+                }
+            });
+        }
+
+        function display(id) {
+            $.get('{{ url_for("get_org") }}' + '?id=' + id, function (data) {
+                let tickets = $.parseJSON(data);
+                let ticket = tickets[0];
+                console.log(ticket);
+                let id = ticket['id'];
+                let name = ticket['name'];
+                let email = ticket['email'];
+                let type = ticket['type'];
+                document.getElementById('modalLabel').innerHTML = name + " (#" + id + ")";
+                document.getElementById('modal-body').innerHTML = `
+                    <div class="row">
+                        <div class="row gx-3">
+                            <div class="col-lg-8  mb-3">
+                                <label class="form-label">Name</label>
+                                <input id="name" name="name" class="form-control" type="text" value="` + name + `"
+                                    readonly>
+                            </div>
+                            <div class="col-lg-4  mb-3">
+                                <label class="form-label">Type</label>
+                                <select id="type" class="form-select" name="type" id="contact" required disabled
+                                    value=` + type + `>
+                                    <option value="customer"> Customer </option>
+                                    <option value="service"> Service </option>
+                                </select>
+                            </div>
+                            <div class="col-lg-8  mb-3">
+                                <label class="form-label">Email</label>
+                                <input class="form-control" name="email" type="email" id="email" value="` + email + `"
+                                    readonly>
+                            </div>
+                            <div class="col-lg-4 mb-3">
+                                <input class="form-control" id="org_id" name="org_id" type="hidden" value=` + id + ` readonly>
+                            </div>
+                            <input id="old_org" name="old_org" class="form-control" type="hidden" value="` + name + `"
+                                readonly>`;
+
+            });
+        }
+
+        function edit() {
+            event.preventDefault();
+            document.getElementById('name').removeAttribute('readonly');
+            document.getElementById('type').removeAttribute('disabled');
+            document.getElementById('email').removeAttribute('readonly');
+            document.getElementById('submit').disabled = false;
+            document.getElementById('submit').classList = 'btn btn-primary';
+        }
+    </script>
+</body>
+{% endblock %}

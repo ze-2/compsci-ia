@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src="../static/js/jquery-3.5.0.min.js"></script>
+    <script src="../static/js/bootstrap.bundle.min.js"></script>
+    <link href="../static/bootstrap.css" rel="stylesheet" type="text/css" />
+    <link href="../static/ui.css" rel="stylesheet" type="text/css" />
+    <link href="../static/responsive.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../static/fonts/material-icon/css/round.css" />
+
+    <style>
+        * {
+            font-family: Inter;
+        }
+    </style>
+    <title>{% block title %}{% endblock %}</title>
+    {% block script %}{% endblock %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div>
+
+        {% for category, message in messages %}
+        <div class="container alert-container p-1">
+            <div class="row no-gutters">
+                <div class="col-lg-6 col-md-12 m-auto">
+                    <div class="alert {{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+</head>
+
+{% block body %}{% endblock %}
+<script src="../static/js/script.js"></script>
+
+</html>

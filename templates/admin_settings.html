@@ -1,0 +1,128 @@
+{% extends 'layout.html' %}
+
+{% block title %} Admin settings {% endblock %}
+
+{% block body %}
+
+<body class="aside-mini">
+
+    <b class="screen-overlay"></b>
+    <aside class="navbar-aside" id="offcanvas_aside">
+        <nav>
+            <ul class="menu-aside">
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('tickets') }}"><i
+                            class="icon material-icons md-sticky_note_2"></i>
+                        <span class="text">Tickets</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('reports') }}"><i
+                            class="icon material-icons md-pie_chart"></i>
+                        <span class="text">Reports</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
+                        <span class="text">Create new</span>
+                    </a>
+                </li>
+                <hr>
+                <li class="menu-item active">
+                    <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
+                            class="icon material-icons md-settings"></i>
+                        <span class="text">Settings</span>
+                    </a>
+                </li>
+                <br>
+                <br>
+        </nav>
+    </aside>
+    <main class="main-wrap">
+        <section class="content-main">
+            <div class="content-header">
+                <h2 class="content-title">Settings</h2>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="row gx-5">
+                        <aside class="col-lg-3 border-end">
+                            <nav class="nav nav-pills flex-lg-column mb-4">
+                                <a class="nav-link active" aria-current="page"
+                                    href="{{ url_for('admin_settings') }}">Your
+                                    Profile</a>
+                                <a class="nav-link" href="{{ url_for('manage_organizations') }}">Manage
+                                    Organizations</a>
+                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add
+                                    Organization</a>
+                                <a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a>
+                                <a class="nav-link" href="{{ url_for('add_user') }}">Add
+                                    Users</a>
+                                <a class="nav-link" href="{{ url_for('manage_tech') }}">Manage Tech</a>
+                                <a class="nav-link" href="{{ url_for('add_tech') }}">Add
+                                    Tech</a>
+                            </nav>
+                        </aside>
+                        <div class="col-lg-9">
+                            <section class="content-body p-xl-4">
+                                <form action="/admin_settings" , method="POST">
+                                    <div class="row">
+                                        <div class="row gx-3">
+                                            <div class="col-6  mb-3">
+                                                <label class="form-label">Name</label>
+                                                <input id="name" name="name" class="form-control" type="text"
+                                                    value="{{ name }}" readonly>
+                                            </div>
+                                            <div class="col-lg-6  mb-3">
+                                                <label class="form-label">Email</label>
+                                                <input class="form-control" name="email" type="email" id="email"
+                                                    value="{{ email }}" readonly>
+                                            </div>
+                                            <div class="col-lg-8  mb-3">
+                                                <label name="org" class="form-label">Organization</label>
+                                                <input class="form-control" id="org" type="text" name="org"
+                                                    value="{{ org }}" readonly>
+                                            </div>
+                                            <div class="col-lg-4 mb-3">
+                                                <label class="form-label">Account type</label>
+                                                <input class="form-control" id="org" type="text" value="Admin" disabled>
+                                            </div>
+                                </form>
+                                <div class="col-lg-6 mt-3 mb-3">
+                                    <button class="btn btn-light me-3" onclick="edit()">Edit
+                                        profile</button>
+                                    <button class="btn btn-primary disabled" type="submit" id="submit" disabled>Save
+                                        changes</button>
+                                </div>
+                        </div>
+                    </div>
+                    <br>
+                    <hr class="my-5">
+                    <div class="row" style="max-width:920px">
+                        <div class="col-md">
+                            <!-- TODO password changing -->
+                            <article class="box mb-3 bg-light">
+                                <a class="btn float-end btn-light btn-sm" href="#">Change</a>
+                                <h6>Password</h6>
+                                <small class="text-muted d-block" style="width:70%">You can reset or change
+                                    your
+                                    password by clicking here</small>
+                            </article>
+                        </div>
+                    </div>
+        </section>
+    </main>
+    <script>
+        function edit() {
+            event.preventDefault();
+            document.getElementById('org').removeAttribute('readonly');
+            document.getElementById('name').removeAttribute('readonly');
+            document.getElementById('email').removeAttribute('readonly');
+            document.getElementById('submit').disabled = false;
+            document.getElementById('submit').classList = 'btn btn-primary';
+
+        }
+        let editing = false;
+    </script>
+</body>
+{% endblock %}
