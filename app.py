@@ -696,30 +696,6 @@ def close_ticket():
     uid = request.args.get('uid')
     return 'todo'
 
-@app.route('/reports')
-@login_required(['admin', 'tech'])
-def reports():
-    return render_template('user_reports.html')
-
-
-@app.route('/tech_reports')
-@login_required(['admin', 'tech'])
-def tech_reports():
-    return render_template('tech_reports.html')
-
-
-@app.route('/get_report_user')
-@login_required(['admin', 'tech'])
-def get_report_user():
-    uid = request.args.get('id')
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM tickets WHERE id=(?)", (uid,))
-        rows = cur.fetchall()
-
-    return 'todo'
-
 
 @app.route('/get_user_org')
 @login_required(['admin', 'tech'])
