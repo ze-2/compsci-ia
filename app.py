@@ -1,19 +1,15 @@
 from functools import wraps
 import json
-import sys
-from flask import Flask, render_template, redirect, url_for, request, flash, session
+from flask import Flask, jsonify, render_template, redirect, url_for, request, flash, session
 from model import User
 # from flask_sslify import SSLify
 import sqlite3
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 
+
 # Initial configs of stuff
 app = Flask(__name__)
-# SSLify(app)
-
-# Auth config
-app = Flask(__name__)
-app.secret_key = "af8abc87f384cdfb0c88d20bb0d66fa67dc6b8040ec877f079e9112b46ce7215"
+app.secret_key = "your_secret_key"
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -27,14 +23,7 @@ def load_user(email):
             "SELECT type FROM users WHERE email = (?)", (email,))
         rows = cur.fetchall()
     role = rows[0]['type']
-
     return User(email, role)
-
-
-@app.route('/')
-def index():
-    # Idk what to put for the index page so we're rendering the login page
-    return render_template('login.html')
 
 
 def login_required(roles=["any"]):
@@ -52,160 +41,263 @@ def login_required(roles=["any"]):
         return decorated_view
     return wrapper
 
-# User
+class OrganizationManager:
+    def __init__(self, db):
+        self.db = db
 
-# TODO: don't let user choose the organization (I FORGOT)
+    def update_organization(self, org_data):
+        self.db.execute_query("""
+            UPDATE organizations SET email=(?), name=(?), type=(?) WHERE id=(?)
+        """, (
+            org_data['email'], org_data['name'], org_data['type'], org_data['id']
+        ))
+        self.db.execute_query("""
+            UPDATE users SET organization=(?) WHERE organization=(?)
+        """, (
+            org_data['name'], org_data['old_org']
+        ))
+        flash('Updated successfully!!', 'alert-success')
+
+
+    def get_orgs(self):
+        rows = self.db.execute_query("SELECT * FROM organizations")
+        return [dict(org) for org in rows]
+
+    def get_org(self, org_id):
+        rows = self.db.execute_query("SELECT * FROM organizations WHERE id=(?)", (org_id,))
+        return [dict(org) for org in rows]
+
+class Database:
+    def __init__(self, db_name):
+        self.db_name = db_name
+
+    def execute_query(self, query, params=()):
+        with sqlite3.connect(self.db_name) as con:
+            con.row_factory = sqlite3.Row
+            cur = con.cursor()
+            cur.execute(query, params)
+            rows = cur.fetchall()
+            con.commit()
+        return rows
+
+
+    def create_organization(self, name, email, org_type):
+        self.execute_query("INSERT INTO organizations(name, email, type) VALUES (?, ?, ?)",
+                           (name, email, org_type))
+        flash("Created successfully!", 'alert-success')
+
+    def manage_users(self, name, email, password, org, uid):
+        old_email = self.execute_query("SELECT email FROM users WHERE id=(?)", (uid,))[0][0]
+        self.execute_query("UPDATE users SET email=(?), name=(?), password=(?), organization=(?) WHERE id=(?)",
+                           (email, name, password, org, uid))
+        self.execute_query("UPDATE tickets SET creator=(?), organization=(?) WHERE creator=(?)",
+                           (email, org, old_email))
+        flash('Updated successfully!!', 'alert-success')
+
+    def add_user(self, name, email, password, org):
+        self.execute_query("INSERT INTO users(name, email, password, type, organization) VALUES (?, ?, ?, ?, ?)",
+                           (name, email, password, "user", org))
+        flash("Created successfully!", 'alert-success')
+
+    def get_users(self):
+        rows = self.execute_query("SELECT * FROM users where type='user'")
+        users = [dict(row) for row in rows]
+        return json.dumps(users)
+
+    def get_all(self):
+        rows = self.execute_query("SELECT * FROM users")
+        users = [dict(row) for row in rows]
+        return json.dumps(users)
+
+    def add_tech(self, name, email, password, org):
+        self.execute_query("INSERT INTO users(name, email, password, type, organization) VALUES (?, ?, ?, ?, ?)",
+                           (name, email, password, "tech", org))
+        flash("Created successfully!", 'alert-success')
+
+    def get_techs(self):
+        rows = self.execute_query("SELECT * FROM users where type='tech'")
+        techs = [dict(row) for row in rows]
+        return json.dumps(techs)
+
+    def render_orgs(self):
+        rows = self.execute_query("SELECT * FROM organizations")
+        orgs = [dict(row) for row in rows]
+        return json.dumps(orgs)
+
+    def get_user_org(self, name):
+        rows = self.execute_query("SELECT organization FROM users WHERE name=(?)", (name,))
+        return rows[0][0]
+
+
+
+    def get_user(self, uid):
+        rows = self.execute_query("SELECT * FROM users WHERE id=(?)", (uid,))
+        user = [dict(row) for row in rows]
+        return json.dumps(user)
+
+    def get_user_tickets(self, user_email):
+        rows = self.execute_query("SELECT * FROM tickets WHERE creator=(?)", (user_email,))
+        tickets = [dict(row) for row in rows]
+        return json.dumps(tickets)
+
+    def manage_tech(self, name, email, password, org, uid):
+        self.execute_query("UPDATE users SET email=(?), name=(?), password=(?), organization=(?) WHERE id=(?)",
+                           (email, name, password, org, uid))
+        flash('Updated successfully!!', 'alert-success')
+
+
+
+
+class UserManager:
+    def __init__(self, db):
+        self.db = db
+
+    def update_user_settings(self, user_data):
+        self.db.execute_query("""
+            UPDATE users SET email=(?), name=(?), organization=(?) WHERE email=(?)
+        """, (
+            user_data['email'], user_data['name'], user_data['organization'], user_data['email']
+        ))
+        flash('Updated successfully!', 'alert-success')
+
+    def get_tech_admin_users(self):
+        rows = self.db.execute_query("SELECT * FROM users WHERE type='tech' OR type='admin'")
+        return [dict(user) for user in rows]
+
+
+
+class TicketManager:
+    def __init__(self, db):
+        self.db = db
+
+    def get_tickets(self):
+        rows = self.db.execute_query("SELECT * FROM tickets")
+        return [dict(ticket) for ticket in rows]
+
+    def get_ticket(self, ticket_id):
+        rows = self.db.execute_query("SELECT * FROM tickets WHERE id=(?)", (ticket_id,))
+        return [dict(ticket) for ticket in rows]
+
+
+    def get_tickets(self):
+        rows = self.db.execute_query("SELECT * FROM tickets")
+        return [dict(ticket) for ticket in rows]
+
+    def create_ticket(self, ticket_data):
+        self.db.execute_query("""
+            INSERT INTO tickets(title, description, creator, organization, priority, status, created)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            ticket_data['title'], ticket_data['description'], ticket_data['creator'],
+            ticket_data['organization'], ticket_data['priority'], ticket_data['status'], ticket_data['created']
+        ))
+        flash('Ticket created successfully!!', 'alert-success')
+
+    def update_ticket(self, ticket_data):
+        print(ticket_data)
+        self.db.execute_query("""
+            UPDATE tickets SET
+            organization=(?), created=(?), updated=(?), title=(?), description=(?), priority=(?), status=(?), creator=(?)
+            WHERE id=(?)
+        """, (
+            ticket_data['organization'], ticket_data['created'], ticket_data['updated'],
+            ticket_data['title'], ticket_data['description'],
+            ticket_data['priority'], ticket_data['status'],
+            ticket_data['creator'], ticket_data['id']
+        ))
+        flash('Updated successfully!!', 'alert-success')
+
+
+# Initialize database and managers
+db = Database('database.db')
+user_manager = UserManager(db)
+ticket_manager = TicketManager(db)
+org_manager = OrganizationManager(db)
+
+@app.route('/')
+def index():
+    return render_template('login.html')
 
 
 @app.route('/user', methods=['POST', 'GET'])
 @login_required(['user'])
 def user():
     if request.method == 'POST':
-        with sqlite3.connect('database.db') as con:
-            con.row_factory = sqlite3.Row
-            cur = con.cursor()
-            cur.execute(
-                "SELECT organization, name FROM users WHERE email=(?)", (current_user.get_id(),))
-            rows = cur.fetchall()
-
-        org = rows[0][0]
-        creator = rows[0][1]
-        created = request.form['created']
-        updated = request.form['updated']
-        title = request.form['title']
-        desc = request.form['desc']
-        requester = request.form['requester']
-        priority = request.form['priority']
-        status = request.form['status']
-        location = request.form['location']
-        uid = request.form['uid']
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("UPDATE tickets SET organization=(?), created=(?), updated=(?), title=(?), description=(?), requester=(?), priority=(?), status=(?), location=(?), creator=(?) WHERE id=(?)",
-                        (org, created, updated, title, desc, requester, priority, status, location, creator, uid))
-            con.commit()
-        flash('Updated successfully!!', 'alert-success')
+        ticket_data = {
+            'organization': request.form['organization'],
+            'created': request.form['created'],
+            'updated': request.form['updated'],
+            'title': request.form['title'],
+            'description': request.form['desc'],
+            'priority': request.form['priority'],
+            'status': request.form['status'],
+            'creator': current_user.name,
+            'id': request.form['uid']
+        }
+        ticket_manager.update_ticket(ticket_data)
         return render_template('user.html')
     else:
         return render_template('user.html')
-
-# TODO assignment system
 
 
 @app.route('/get_tickets')
 @login_required(["tech", "admin"])
 def get_tickets():
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM tickets")
-        rows = cur.fetchall()
-
-    tickets = []
-    for ticket in rows:
-        ticket = dict(ticket)
-        tickets.append(ticket)
-    return json.dumps(tickets)
+    tickets = ticket_manager.get_tickets()
+    return jsonify(tickets)
 
 
 @app.route('/get_orgs')
 @login_required(["any"])
 def get_orgs():
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM organizations")
-        rows = cur.fetchall()
-
-    orgs = []
-    for org in rows:
-        org = dict(org)
-        orgs.append(org)
-    return json.dumps(orgs)
+    orgs = org_manager.get_orgs()
+    return jsonify(orgs)
 
 
 @app.route('/get_ticket')
 @login_required(["any"])
 def get_ticket():
     ticket_id = request.args.get('id')
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM tickets WHERE id=(?)", (ticket_id,))
-        rows = cur.fetchall()
-
-    tickets = []
-    for ticket in rows:
-        ticket = dict(ticket)
-        tickets.append(ticket)
-    return json.dumps(tickets)
+    ticket = ticket_manager.get_ticket(ticket_id)
+    return jsonify(ticket)
 
 
 @app.route('/get_org')
 @login_required(["any"])
 def get_org():
     org_id = request.args.get('id')
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM organizations WHERE id=(?)", (org_id))
-        rows = cur.fetchall()
-
-    orgs = []
-    for org in rows:
-        org = dict(org)
-        orgs.append(org)
-    return json.dumps(orgs)
-
-# TODO: maybe implement pagination if there's time :)
+    org = org_manager.get_org(org_id)
+    return jsonify(org)
 
 
 @app.route('/get_tech_admin')
 @login_required(["any"])
 def get_tech_admin():
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM users WHERE type='tech' OR type='admin'")
-        rows = cur.fetchall()
-
-    orgs = []
-    for org in rows:
-        org = dict(org)
-        orgs.append(org)
-    return json.dumps(orgs)
+    users = user_manager.get_tech_admin_users()
+    return jsonify(users)
 
 
 @app.route('/tickets', methods=['GET', 'POST'])
 @login_required(['admin', 'tech'])
 def tickets():
     if request.method == 'POST':
-        org = request.form['org']
-        created = request.form['created']
-        updated = request.form['updated']
-        title = request.form['title']
-        desc = request.form['desc']
-        requester = request.form['requester']
-        # priority = request.form['priority'] - remove for closing functionality
-        status = request.form['status']
-        location = request.form['location']
-        with sqlite3.connect('database.db') as con:
-            con.row_factory = sqlite3.Row
-            cur = con.cursor()
-            cur.execute(
-                "SELECT name FROM users WHERE email=(?)", (current_user.get_id(),))
-            rows = cur.fetchall()
-        creator = rows[0][0]
-        uid = request.form['uid']
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("UPDATE tickets SET organization=(?), created=(?), updated=(?), title=(?), description=(?), requester=(?), status=(?), location=(?), creator=(?) WHERE id=(?)",
-                        (org, created, updated, title, desc, requester, status, location, creator, uid, ))
-            con.commit()
-        flash('Updated successfully!!', 'alert-success')
+        ticket_data = {
+            'organization': request.form['org'],
+            'title': request.form['title'],
+            'description': request.form['desc'],
+            'created': request.form['created'],
+            'updated': request.form['updated'],
+            'priority': request.form['priority'],
+            'status': request.form['status'],
+            'creator': request.form['creator'],
+            'id': request.form['uid']
+        }
+        ticket_manager.update_ticket(ticket_data)
         return render_template('tickets.html')
     else:
-        return render_template('tickets.html')
+        tickets = ticket_manager.get_tickets()
+        print(tickets)
+        return render_template('tickets.html', tickets=tickets)
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -267,64 +359,36 @@ def login():
     else:
         return render_template('login.html')
 
-
 @app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('index'))
 
 
-@app.route('/new', methods=['POST', 'GET'])
-@login_required(['admin', 'tech'])
-def new():
-    if request.method == 'POST':
-        title = request.form['title']
-        desc = request.form['desc']
-        date = request.form['date']
-        location = request.form['location']
-        requester = request.form['requester']
-        priority = request.form['priority']
-        status = request.form['status']
-        org = request.form['org']
-        creator = request.form['creator']
-
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("INSERT INTO tickets(title, description, creator, organization, priority, status, created, requester, location) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        (title, desc, creator, org, priority, status, date, requester, location, ))
-            con.commit()
-            flash("Created successfully!", 'alert-success')
-        return render_template('new.html')
-    else:
-        return render_template('new.html')
-
-
 @app.route('/new_ticket_user', methods=['POST', 'GET'])
 def new_ticket_user():
     if request.method == 'POST':
-        with sqlite3.connect('database.db') as con:
-            con.row_factory = sqlite3.Row
-            cur = con.cursor()
-            cur.execute(
-                "SELECT organization, name FROM users WHERE email=(?)", (current_user.get_id(),))
-            rows = cur.fetchall()
-        org = rows[0][0]
-        creator = rows[0][1]
+        org = request.form['org']
+        creator = request.form['creator']
         title = request.form['title']
         desc = request.form['desc']
         date = request.form['date']
-        requester = request.form['requester']
-        location = request.form['location']
         assignee = request.form['assignee']
         priority = request.form['priority']
         status = request.form['status']
 
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("INSERT INTO tickets(title, description, assignee,  creator, organization, priority, status, created, location, requester) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        (title, desc, assignee, creator, org, priority, status, date, location, requester,))
-            con.commit()
-            flash("Created successfully!", 'alert-success')
+        ticket_data = {
+            'title': title,
+            'description': desc,
+            'assignee': assignee,
+            'creator': creator,
+            'organization': org,
+            'priority': priority,
+            'status': status,
+            'created': date,
+        }
+
+        ticket_manager.create_ticket(ticket_data)
         return render_template('new_ticket_user.html')
     else:
         return render_template('new_ticket_user.html')
@@ -344,12 +408,15 @@ def admin_settings():
         name = request.form['name']
         org = request.form['org']
         email = request.form['email']
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("UPDATE users SET email=(?), name=(?), organization=(?) WHERE email=(?)",
-                        (email, name, org, usr_email))
-            con.commit()
-        flash('Updated successfully!', 'alert-success')
+
+        user_data = {
+            'email': email,
+            'name': name,
+            'organization': org,
+            'email': usr_email
+        }
+
+        user_manager.update_user_settings(user_data)
         return render_template('admin_settings.html', name=name, org=org, email=email)
     else:
         email = current_user.get_id()
@@ -366,8 +433,6 @@ def admin_settings():
         email = rows[0]['email']
         return render_template('admin_settings.html', name=name, org=org, email=email)
 
-# todo: when organization is changed, changes in users & tickets also updated
-
 
 @app.route('/manage_organizations', methods=['POST', 'GET'])
 @login_required(['admin', 'tech'])
@@ -378,28 +443,47 @@ def manage_organizations():
         org_type = request.form['type']
         org_id = request.form['org_id']
         old_org = request.form['old_org']
-        print(old_org, file=sys.stdout, flush=True)
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("UPDATE organizations SET email=(?), name=(?), type=(?) WHERE id=(?)",
-                        (email, name, org_type, org_id,))
-            con.commit()
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute(
-                "UPDATE users SET organization=(?) WHERE organization=(?)", (name, old_org,))
-            con.commit()
 
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute(
-                "UPDATE tickets SET organization=(?) WHERE organization=(?)", (name, old_org,))
-            con.commit()
+        org_data = {
+            'name': name,
+            'email': email,
+            'type': org_type,
+            'id': org_id,
+            'old_org': old_org
+        }
 
-        flash('Updated successfully!!', 'alert-success')
+        org_manager.update_organization(org_data)
         return render_template('manage_organizations.html')
     else:
         return render_template('manage_organizations.html')
+
+
+@app.route('/new', methods=['POST', 'GET'])
+@login_required(['admin', 'tech'])
+def new():
+    if request.method == 'POST':
+        title = request.form['title']
+        desc = request.form['desc']
+        date = request.form['date']
+        priority = request.form['priority']
+        status = request.form['status']
+        org = request.form['org']
+        creator = request.form['creator']
+
+        ticket_data = {
+            'title': title,
+            'description': desc,
+            'creator': creator,
+            'organization': org,
+            'priority': priority,
+            'status': status,
+            'created': date,
+        }
+
+        ticket_manager.create_ticket(ticket_data)
+        return render_template('new.html')
+    else:
+        return render_template('new.html')
 
 
 @app.route('/add_organization', methods=['POST', 'GET'])
@@ -409,12 +493,7 @@ def add_organization():
         name = request.form['name']
         email = request.form['email']
         org_type = request.form['type']
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("INSERT INTO organizations(name, email, type) VALUES (?, ?, ?)",
-                        (name, email, org_type))
-            con.commit()
-            flash("Created successfully!", 'alert-success')
+        db.create_organization(name, email, org_type)
         return render_template('add_organization.html')
     else:
         return render_template('add_organization.html')
@@ -429,73 +508,10 @@ def manage_users():
         password = request.form['password']
         org = request.form['org']
         uid = request.form['uid']
-
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("SELECT email FROM users WHERE id=(?)",
-                        (uid,))
-            rows = cur.fetchall()
-
-        old_email = rows[0][0]
-
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("UPDATE users SET email=(?), name=(?), password=(?), organization=(?) WHERE id=(?)",
-                        (email, name, password, org, uid,))
-
-            con.commit()
-
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("UPDATE tickets SET creator=(?), organization=(?) WHERE creator=(?)",
-                        (email, org, old_email))
-
-            con.commit()
-
-        flash('Updated successfully!!', 'alert-success')
+        db.manage_users(name, email, password, org, uid)
         return render_template('manage_users.html')
     else:
         return render_template('manage_users.html')
-
-
-@app.route('/add_location', methods=['GET', 'POST'])
-@login_required(['admin', 'tech'])
-def add_location():
-    if request.method == 'POST':
-        location = request.form['location']
-        org = request.form['org']
-
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("INSERT INTO locations(location, organization) VALUES (?, ?)",
-                        (location, org,))
-            con.commit()
-
-            con.commit()
-        flash('Added successfully!!', 'alert-success')
-        return render_template('add_location.html')
-    else:
-        return render_template('add_location.html')
-
-
-@app.route('/manage_locations', methods=['GET', 'POST'])
-@login_required(['admin', 'tech'])
-def manage_locations():
-    if request.method == 'POST':
-        location = request.form['location']
-        org = request.form['org']
-        uid = request.form['uid']
-
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("UPDATE locations SET location=(?), organization=(?) WHERE id=(?)",
-                        (location, org, uid,))
-
-            con.commit()
-        flash('Updated successfully!!', 'alert-success')
-        return render_template('manage_locations.html')
-    else:
-        return render_template('manage_locations.html')
 
 
 @app.route('/add_user', methods=['GET', 'POST'])
@@ -506,79 +522,33 @@ def add_user():
         email = request.form['email']
         password = request.form['password']
         org = request.form['org']
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("INSERT INTO users(name, email, password, type, organization) VALUES (?, ?, ?, ?, ?)",
-                        (name, email, password, "user", org))
-            con.commit()
-            flash("Created successfully!", 'alert-success')
-            return render_template('add_user.html')
+        db.add_user(name, email, password, org)
+        return render_template('add_user.html')
     else:
         return render_template('add_user.html')
 
-
-@app.route('/get_users')
-@login_required(["admin", "tech"])
-def get_users():
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM users where type='user'")
-        rows = cur.fetchall()
-
-    users = []
-    for user in rows:
-        user = dict(user)
-        users.append(user)
-    return json.dumps(users)
 
 
 @app.route('/get_all')
 @login_required(["admin", "tech"])
 def get_all():
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM users")
-        rows = cur.fetchall()
+    return db.get_all()
 
-    users = []
-    for user in rows:
-        user = dict(user)
-        users.append(user)
-    return json.dumps(users)
-
+@app.route('/get_users')
+@login_required(["admin", "tech"])
+def get_users():
+    return db.get_users()
 
 @app.route('/get_user')
 @login_required(["admin", "tech"])
 def get_user():
     uid = request.args.get('uid')
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM users WHERE id=(?)", (uid))
-        rows = cur.fetchall()
-
-    orgs = []
-    for org in rows:
-        org = dict(org)
-        orgs.append(org)
-    return json.dumps(orgs)
+    return db.get_user(uid)
 
 
 @app.route('/get_user_tickets')
 def get_user_tickets():
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM tickets WHERE creator=(?)",
-                    (current_user.get_id(),))
-        rows = cur.fetchall()
-    tickets = []
-    for ticket in rows:
-        ticket = dict(ticket)
-        tickets.append(ticket)
-    return json.dumps(tickets)
+    return db.get_user_tickets(current_user.get_id())
 
 
 @app.route('/manage_tech', methods=['GET', 'POST'])
@@ -590,17 +560,10 @@ def manage_tech():
         password = request.form['password']
         org = request.form['org']
         uid = request.form['uid']
-
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("UPDATE users SET email=(?), name=(?), password=(?), organization=(?) WHERE id=(?)",
-                        (email, name, password, org, uid))
-            con.commit()
-        flash('Updated successfully!!', 'alert-success')
+        db.manage_tech(name, email, password, org, uid)
         return render_template('manage_tech.html')
     else:
         return render_template('manage_tech.html')
-
 
 @app.route('/add_tech', methods=['GET', 'POST'])
 @login_required(['admin'])
@@ -610,13 +573,8 @@ def add_tech():
         email = request.form['email']
         password = request.form['password']
         org = request.form['org']
-        with sqlite3.connect('database.db') as con:
-            cur = con.cursor()
-            cur.execute("INSERT INTO users(name, email, password, type, organization) VALUES (?, ?, ?, ?, ?)",
-                        (name, email, password, "tech", org))
-            con.commit()
-            flash("Created successfully!", 'alert-success')
-            return render_template('add_tech.html')
+        db.add_tech(name, email, password, org)
+        return render_template('add_tech.html')
     else:
         return render_template('add_tech.html')
 
@@ -624,90 +582,24 @@ def add_tech():
 @app.route('/get_techs')
 @login_required(["admin", "tech"])
 def get_techs():
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM users where type='tech'")
-        rows = cur.fetchall()
-
-    # Grammar who
-    techs = []
-    for tech in rows:
-        tech = dict(tech)
-        techs.append(tech)
-    return json.dumps(techs)
+    return db.get_techs()
 
 
 @app.route('/render_orgs')
 @login_required(['any'])
 def render_orgs():
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM organizations")
-        rows = cur.fetchall()
-
-    orgs = []
-    for org in rows:
-        org = dict(org)
-        orgs.append(org)
-    return json.dumps(orgs)
-
-
-@app.route('/get_locations')
-@login_required(["admin", "tech"])
-def get_locations():
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM locations")
-        rows = cur.fetchall()
-
-    locations = []
-    for location in rows:
-        location = dict(location)
-        locations.append(location)
-    return json.dumps(locations)
-
-
-@app.route('/get_location')
-@login_required(["admin", "tech"])
-def get_location():
-    uid = request.args.get('uid')
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT * FROM locations WHERE id=(?)", (uid))
-        rows = cur.fetchall()
-
-    locations = []
-    for location in rows:
-        location = dict(location)
-        locations.append(location)
-    return json.dumps(locations)
-
-# todo: delete organization button
-# todo: resolve all placeholders
-
-# closing system: on button press, pullover confirmation, js hits this endpoint and takes ID, close ticket here.
-@app.route('/close_ticket', methods=['POST', 'GET'])
-@login_required(['any'])
-def close_ticket():
-    uid = request.args.get('uid')
-    return 'todo'
+    return db.render_orgs()
 
 
 @app.route('/get_user_org')
 @login_required(['admin', 'tech'])
 def get_user_org():
     name = request.args.get('id')
-    with sqlite3.connect('database.db') as con:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        cur.execute("SELECT organization FROM users WHERE name=(?)", (name,))
-        rows = cur.fetchall()
-    return rows[0][0]
+    return db.get_user_org(name)
 
 
-if __name__ == "__main__":
-    app.run()
+if __name__ == '__main__':
+    app.run(debug=True)
+
+if __name__ == '__main__':
+    app.run(debug=True)

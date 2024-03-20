@@ -109,7 +109,7 @@
         $.get('{{ url_for("get_orgs") }}', function (data) {
             let names = []
             $('org').empty();
-            let orgs = $.parseJSON(data);
+            let orgs = data;
             let num_entires = Object.keys(orgs).length;
             for (let i = 0; i < num_entires; ++i) {
                 let org = orgs[i];
@@ -129,7 +129,7 @@
             let names = []
             $('assignee').empty();
             $('contact').empty();
-            let people = $.parseJSON(data);
+            let people = data;
             let num_entires = Object.keys(people).length;
             for (let i = 0; i < num_entires; ++i) {
                 let person = people[i];

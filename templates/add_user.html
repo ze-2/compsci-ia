@@ -100,7 +100,7 @@
         $.get('{{ url_for("get_orgs") }}', function (data) {
             let names = []
             $('org').empty();
-            let orgs = $.parseJSON(data);
+            let orgs = data;
             let num_entires = Object.keys(orgs).length;
             for (let i = 0; i < num_entires; ++i) {
                 let org = orgs[i];

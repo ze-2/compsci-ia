@@ -81,8 +81,8 @@
 
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-danger">Delete
-                                ticket</button>
+                            <!-- <button type="button" class="btn btn-outline-danger">Delete
+                                ticket</button> -->
                             <button type="button" onclick="edit();" class="btn btn-light">Edit</button>
                             <button type="submit" id="submit" class="btn btn-primary" disabled>Save changes</button>
                         </div>
@@ -99,7 +99,7 @@
             let table = document.getElementById('table-content');
             table.innerHTML = '';
             $.get('{{ url_for("get_user_tickets") }}', function (data) {
-                let tickets = $.parseJSON(data);
+                let tickets = data;
                 let num_entires = Object.keys(tickets).length;
                 for (let i = 0; i < num_entires; ++i) {
                     let ticket = tickets[i];
@@ -154,7 +154,7 @@
 
         function display(id) {
             $.get('{{ url_for("get_ticket") }}' + '?id=' + id, function (data) {
-                let tickets = $.parseJSON(data);
+                let tickets = data;
                 let num_entires = Object.keys(tickets).length;
                 to_display = num_entires;
                 for (let i = 0; i < to_display; ++i) {

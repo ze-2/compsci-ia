@@ -31,13 +31,6 @@ CREATE TABLE tickets (
     -- contact STRING, (get rid of contact)
     created DATETIME, -- collect on form submission
     updated DATETIME, -- collect on form update
-    location STRING -- new
-);
-
-CREATE TABLE locations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    location STRING,
-    organization STRING
 );
 
 insert into users (email, name, password, type, organization) values ("x@email.com", "john", "x", "user", "org x");

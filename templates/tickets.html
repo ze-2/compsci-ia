@@ -88,7 +88,6 @@
                                 <tr>
                                     <th>#ID</th>
                                     <th scope="col">Title</th>
-                                    <th scope="col">Requester</th>
                                     <th scope="col">Creator</th>
                                     <th scope="col">Org</th>
                                     <th scope="col">Priority</th>
@@ -119,8 +118,8 @@
 
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-danger">Delete
-                                ticket</button>
+                            <!-- <button type="button" class="btn btn-outline-danger">Delete
+                                ticket</button> -->
                             <button type="button" onclick="edit();" class="btn btn-light">Edit</button>
                             <button type="submit" id="submit" class="btn btn-primary" disabled>Save
                                 changes</button>
@@ -132,7 +131,7 @@
     </main>
 
     <script type="text/javascript">
-        // let to_display = $("#to_display").val();
+        // let to_display = ("#to_display").val();
         // let to_display_priority = $("#priority").val();
         // let to_display_status = $("#status").val();
 
@@ -140,10 +139,9 @@
         render_table();
 
         function render_orgs(val) {
-            console.log(val);
             $.get('{{ url_for("get_orgs") }}', function (data) {
                 let form = document.getElementById('org');
-                let orgs = $.parseJSON(data);
+                let orgs = data;
                 let num_entires = Object.keys(orgs).length;
                 to_display = num_entires;
                 for (let i = 0; i < to_display; ++i) {
@@ -155,20 +153,19 @@
             });
         }
 
-        // TODO: auto fill this
-        function render_people() {
+        function render_creators(val) {
             $.get('{{ url_for("get_all") }}', function (data) {
-                let people = $.parseJSON(data);
-                let num_entires = Object.keys(people).length;
-                str = "";
-                for (let i = 0; i < num_entires; ++i) {
-                    let person = people[i];
-                    str += "<option>" + person['name'] +
-                        "</option>"
+                let form = document.getElementById('creator');
+                let users = JSON.parse(data);
+                let num_entires = Object.keys(users).length;
+                to_display = num_entires;
+                for (let i = 0; i < to_display; ++i) {
+
+                    let user = users[i];
+                    let newOption = new Option(user['name'], user['name'])
+                    form.add(newOption, undefined);
                 }
-                console.log(str);
-                document.getElementById("creator").innerHTML = str;
-                document.getElementById("requester").innerHTML = str;
+                form.value = val;
             });
         }
 
@@ -191,7 +188,7 @@
         function render_table() {
             table.innerHTML = '';
             $.get('{{ url_for("get_tickets") }}', function (data) {
-                let tickets = $.parseJSON(data);
+                let tickets = data;
                 let num_entires = Object.keys(tickets).length;
                 // haha yes it removes elements from the start ._.
                 // if (num_entires < to_display) {
@@ -208,7 +205,6 @@
                     let ticket = tickets[i];
                     let id = ticket['id'];
                     let title = ticket['title'];
-                    let requester = ticket['requester'];
                     let creator = ticket['creator'];
                     let organization = ticket['organization'];
                     let created = ticket['created'];
@@ -241,7 +237,6 @@
                         <tr>
                             <td>` + id + `</td>
                             <td>` + title + `</td>
-                            <td>` + requester + `</td>
                             <td>` + creator + `</td>
                             <td>` + organization + `</td>
 
@@ -260,7 +255,7 @@
         // TODO: dynamically display locations and requester
         function display(id) {
             $.get('{{ url_for("get_ticket") }}' + '?id=' + id, function (data) {
-                let tickets = $.parseJSON(data);
+                let tickets = data;
                 let num_entires = Object.keys(tickets).length;
                 to_display = num_entires;
                 for (let i = 0; i < to_display; ++i) {
@@ -269,12 +264,10 @@
                     let org = ticket['organization'];
                     let title = ticket['title'];
                     let desc = ticket['description'];
-                    let requester = ticket['requester'];
                     let creator = ticket['creator'];
 
                     let priority = ticket['priority'];
                     let status = ticket['status'];
-                    let location = ticket['location'];
                     let created = ticket['created'];
                     let updated = ticket['updated'];
                     document.getElementById('modalLabel').innerHTML = title + " (#" + id + ")";
@@ -326,22 +319,9 @@
                     </div>
                     <div class="row gx-2">
                         <div class="col-sm-6">
-                            <div class="mb-4">
-                                <label for="requester" class="form-label">Requester</label>
-                                <select class="form-select" name="requester" id="requester" value="` + requester + `"
-                                    required>
-                                </select>
-                            </div>
+
                         </div>
-                        <!-- TODO: location rendering -->
-                        <div class="col-sm-6">
-                            <div class="mb-4">
-                                <label for="location" class="form-label">Location</label disabled value="` + location + `">
-                                <select class="form-select" name="location" id="location" required>
-                                    <option value="placeholder">Placeholder</option>
-                                </select>
-                            </div>
-                        </div>
+
                     </div>
                     <div class="row gx-2">
                         <div class="col-sm-6">
@@ -371,8 +351,8 @@
             </div>
         </div>
         `
+                    render_creators(creator);
                     render_orgs(org);
-                    render_people();
                     let today = new Date();
                     today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
                     document.getElementById('updated').value = today.toISOString().slice(0, 16);
@@ -389,10 +369,8 @@
             document.getElementById('org').removeAttribute('disabled');
             document.getElementById('creator').removeAttribute('disabled');
 
-
-            document.getElementById('location').removeAttribute('disabled');
-            document.getElementById('requester').removeAttribute('disabled');
             document.getElementById('priority').removeAttribute('disabled');
+            document.getElementById('status').removeAttribute('disabled');
 
             document.getElementById('submit').disabled = false;
             document.getElementById('submit').classList = 'btn btn-primary';

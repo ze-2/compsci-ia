@@ -92,8 +92,8 @@
 
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-outline-danger">Delete
-                                                organization</button>
+                                            <!-- <button type="button" class="btn btn-outline-danger">Delete
+                                                organization</button> -->
                                             <button type="button" onclick="edit();" class="btn btn-light">Edit</button>
                                             <button type="submit" id="submit" class="btn btn-primary" disabled>Save
                                                 changes</button>
@@ -113,7 +113,7 @@
         function render_table() {
             table.innerHTML = '';
             $.get('{{ url_for("get_techs") }}', function (data) {
-                let users = $.parseJSON(data);
+                let users = JSON.parse(data);
                 let num_entires = Object.keys(users).length;
                 to_display = num_entires;
                 for (let i = 0; i < to_display; ++i) {
@@ -141,7 +141,7 @@
         function render_orgs(val) {
             $.get('{{ url_for("get_orgs") }}', function (data) {
                 let form = document.getElementById('org');
-                let orgs = $.parseJSON(data);
+                let orgs = data;
                 let num_entires = Object.keys(orgs).length;
                 to_display = num_entires;
                 for (let i = 0; i < to_display; ++i) {
@@ -155,7 +155,7 @@
 
         function display(id) {
             $.get('{{ url_for("get_user") }}' + '?uid=' + id, function (data) {
-                let users = $.parseJSON(data);
+                let users = JSON.parse(data);
                 let user = users[0];
                 console.log(user);
                 let uid = user['id'];

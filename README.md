@@ -1,2 +1,0 @@
-# compsci ia
-lol
