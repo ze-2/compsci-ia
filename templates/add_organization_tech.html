@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 
-{% block title %} Create user {% endblock %}
+{% block title %} Create organization {% endblock %}
 
 {% block body %}
 
@@ -41,7 +41,7 @@
     <main class="main-wrap">
         <section class="content-main">
             <div class="content-header">
-                <h2 class="content-title">Add users</h2>
+                <h2 class="content-title">Create Organizations</h2>
             </div>
 
             <div class="card">
@@ -53,44 +53,39 @@
                                     Profile</a>
                                 <a class="nav-link" href="{{ url_for('manage_organizations') }}">Manage
                                     Organizations</a>
-                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add
+                                <a class="nav-link active" href="{{ url_for('add_organization') }}">Add
                                     Organization</a>
                                 <a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a>
-                                <a class="nav-link active" href="{{ url_for('add_user') }}">Add
+                                <a class="nav-link" href="{{ url_for('add_user') }}">Add
                                     Users</a>
-                                <a class="nav-link" href="{{ url_for('manage_tech') }}">Manage Tech</a>
-                                <a class="nav-link" href="{{ url_for('add_tech') }}">Add
-                                    Tech</a>
                             </nav>
+
                         </aside>
                         <div class="col-lg-9">
                             <section class="content-body p-xl-4">
-                                <form action="/add_user" , method="POST">
+                                <form action="/add_organization" , method="POST">
                                     <section class="content-main">
                                         <div class="content-header">
-                                            <h2 class="content-title">Create new user</h2>
-                                            <button type="submit" class="btn btn-primary">Create user</button>
+                                            <h2 class="content-title">Create new organization</h2>
+                                            <button type="submit" class="btn btn-primary">Create organization</button>
                                         </div>
                                         <div class="card mb-4">
                                             <div class="card-body">
                                                 <div class="mb-4">
                                                     <label class="form-label">Name</label>
-                                                    <input type="text" placeholder="Name of user" id="name" name="name"
-                                                        class="form-control" required></input>
+                                                    <input type="text" placeholder="Name of organization" id="name"
+                                                        name="name" class="form-control" required></input>
                                                 </div>
                                                 <div class="mb-4">
                                                     <label class="form-label">Email</label>
-                                                    <input placeholder="Email of user" id="email" type="email"
-                                                        class="form-control" name="email" required></input>
-                                                </div>
-                                                <div class="mb-4">
-                                                    <label class="form-label">Password</label>
-                                                    <input placeholder="Password" id="password" type="text"
-                                                        class="form-control" name="password" required></input>
+                                                    <input placeholder="Email of organization (contact)" id="email"
+                                                        type="email" class="form-control" name="email" required></input>
                                                 </div>
                                                 <div>
-                                                    <label for="status" class="form-label">Organization</label>
-                                                    <select class="form-select" name="org" id="org" required>
+                                                    <label for="status" class="form-label">Type</label>
+                                                    <select class="form-select" name="type" id="type" required>
+                                                        <option value="Customer">Customer</option>
+                                                        <option value="Service">Service</option>
                                                     </select>
                                                 </div>
                                     </section>
@@ -102,25 +97,5 @@
             </div>
         </section>
     </main>
-    <script>
-        $.get('{{ url_for("get_orgs") }}', function (data) {
-            let names = []
-            $('org').empty();
-            let orgs = data;
-            let num_entires = Object.keys(orgs).length;
-            for (let i = 0; i < num_entires; ++i) {
-                let org = orgs[i];
-                console.log(org);
-                let name = org['name'];
-                names.push(name);
-            }
-            var str = ""
-            for (var org of names) {
-                str += "<option>" + org + "</option>"
-            }
-            console.log(str);
-            document.getElementById("org").innerHTML = str;
-        });
-    </script>
 </body>
 {% endblock %}

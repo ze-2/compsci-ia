@@ -3,6 +3,7 @@
 {% block title %} New ticket {% endblock %}
 
 {% block body %}
+<!-- TODO: UPDATE ACCORDING TO NEW SCHEMA -->
 
 <body class="aside-mini">
     <b class="screen-overlay"></b>
@@ -10,7 +11,8 @@
         <nav>
             <ul class="menu-aside">
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('user') }}"><i class="icon material-icons md-person"></i>
+                    <a class="menu-link" href="{{ url_for('user') }}"><i
+                            class="icon material-icons md-sticky_note_2"></i>
                         <span class="text">Tickets</span>
                     </a>
                 </li>
@@ -22,14 +24,13 @@
                 </li>
                 <hr>
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('user_settings') }}"><i
-                            class="icon material-icons md-settings"></i>
+                    <a class="menu-link" href="{{ url_for('logout') }}"><i
+                            class="icon material-icons text-danger md-log_out"></i>
                         <span class="text">Settings</span>
                     </a>
                 </li>
                 <br>
                 <br>
-            </ul>
         </nav>
     </aside>
 
@@ -42,37 +43,41 @@
                 </div>
                 <div class="card mb-4">
                     <div class="card-body">
-                        <div class="row gx-2 mb-4">
+                        <div class="row gx-2">
                             <div class="col-sm-6">
-                                <label class="form-label">Title</label>
-                                <input type="text" placeholder="Title.." id="title" name="title" class="form-control"
-                                    maxlength="40" rows="4" required></input>
+                                <div class="mb-4">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" placeholder="Title.." id="title" name="title"
+                                        class="form-control" maxlength="40" rows="4" required></input>
+                                </div>
                             </div>
                             <div class="col-sm-6">
-                                <label for="date" class="form-label">Date created (mm/dd/yyyy)</label><br>
+                                <label for="date" class="form-label">Date created
+                                    (mm/dd/yyyy)</label><br>
                                 <input type="datetime-local" name="date" id="date" required class="date">
+                            </div>
+                        </div>
+
+                        <div class="row gx-2">
+                            <div class="col-sm-6">
+                                <div class="mb-4">
+                                    <label for="creator" class="form-label">Creator</label>
+                                    <select class="form-select" name="creator" id="creator" required>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="mb-4">
+                                    <label for="org" class="form-label">Organization</label>
+                                    <select class="form-select" name="org" id="org" required>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="mb-4">
                             <label class="form-label">Description</label>
                             <textarea placeholder="Description.." id="desc" class="form-control" rows="4" name="desc"
                                 required></textarea>
-                        </div>
-                        <div class="row gx-2">
-                            <div class="col-sm-6">
-                                <div class="mb-4">
-                                    <label for="contact" class="form-label">Contact</label>
-                                    <select class="form-select" name="contact" id="contact" required>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="mb-4">
-                                    <label for="assignee" class="form-label">Assignee</label>
-                                    <select class="form-select" name="assignee" id="assignee" required>
-                                    </select>
-                                </div>
-                            </div>
                         </div>
                         <div class="row gx-2">
                             <div class="col-sm-6">
@@ -125,25 +130,21 @@
             document.getElementById("org").innerHTML = str;
         });
 
-        $.get('{{ url_for("get_tech_admin") }}', function (data) {
+        $.get('{{ url_for("get_all") }}', function (data) {
             let names = []
-            $('assignee').empty();
-            $('contact').empty();
-            let people = data;
-            let num_entires = Object.keys(people).length;
+            $('creator').empty();
+            let users = JSON.parse(data);
+            let num_entires = Object.keys(users).length;
             for (let i = 0; i < num_entires; ++i) {
-                let person = people[i];
-                console.log(person);
-                let name = person['name'];
+                let user = users[i];
+                let name = user['name'];
                 names.push(name);
             }
             var str = ""
-            for (var org of names) {
-                str += "<option>" + org + "</option>"
+            for (var user of names) {
+                str += "<option value=" + user + ">" + user + "</option>"
             }
-            console.log(str);
-            document.getElementById("assignee").innerHTML = str;
-            document.getElementById("contact").innerHTML = str;
+            document.getElementById("creator").innerHTML = str;
         });
     </script>
 </body>

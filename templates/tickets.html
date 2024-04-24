@@ -28,6 +28,12 @@
                         <span class="text">Settings</span>
                     </a>
                 </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="{{ url_for('logout') }}"><i
+                            class="icon material-icons text-danger md-log_out"></i>
+                        <span class="text">Settings</span>
+                    </a>
+                </li>
                 <br>
                 <br>
         </nav>
@@ -190,16 +196,6 @@
             $.get('{{ url_for("get_tickets") }}', function (data) {
                 let tickets = data;
                 let num_entires = Object.keys(tickets).length;
-                // haha yes it removes elements from the start ._.
-                // if (num_entires < to_display) {
-                //     to_display = num_entires;
-                // } else if (to_display == -1) {
-                //     to_display = num_entires;
-                // } else if (to_display > num_entires) {
-                //     to_display = to_display;
-                // }
-                // to_display = num_entires < to_display ? num_entires : to_display;
-                // console.log(to_display);
                 let to_display = num_entires;
                 for (let i = 0; i < to_display; ++i) {
                     let ticket = tickets[i];

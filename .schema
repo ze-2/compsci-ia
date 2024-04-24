@@ -23,7 +23,6 @@ CREATE TABLE tickets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title STRING,
     description STRING,
-    requester STRING, -- get rid of 'assignee'
     creator STRING, -- collect from user (name)
     organization STRING, -- collect from user
     priority STRING,

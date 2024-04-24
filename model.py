@@ -1,8 +1,9 @@
 # Contains models for flask-login
 class User:
-    def __init__(self, email, role):
+    def __init__(self, email, role, name):
         self.email = email
         self.role = role
+        self.name = name
 
     def is_active(self):
         return True
@@ -12,6 +13,9 @@ class User:
             return str(self.email)
         except AttributeError:
             return None
+
+    def get_name(self):
+        return self.name
 
     def is_authenticated(self):
         return True

@@ -23,7 +23,15 @@ def load_user(email):
             "SELECT type FROM users WHERE email = (?)", (email,))
         rows = cur.fetchall()
     role = rows[0]['type']
-    return User(email, role)
+
+    with sqlite3.connect('database.db') as con:
+        con.row_factory = sqlite3.Row
+        cur = con.cursor()
+        cur.execute(
+            "SELECT name FROM users WHERE email = (?)", (email,))
+        rows = cur.fetchall()
+    name = rows[0]['name']
+    return User(email=email, role=role, name=name)
 
 
 def login_required(roles=["any"]):
@@ -128,24 +136,20 @@ class Database:
         rows = self.execute_query("SELECT organization FROM users WHERE name=(?)", (name,))
         return rows[0][0]
 
-
-
     def get_user(self, uid):
         rows = self.execute_query("SELECT * FROM users WHERE id=(?)", (uid,))
         user = [dict(row) for row in rows]
         return json.dumps(user)
 
-    def get_user_tickets(self, user_email):
-        rows = self.execute_query("SELECT * FROM tickets WHERE creator=(?)", (user_email,))
-        tickets = [dict(row) for row in rows]
-        return json.dumps(tickets)
+    def get_user_tickets(self, name):
+        print(name)
+        rows = self.execute_query("SELECT * FROM tickets WHERE creator=(?)", (name,))
+        return [dict(ticket) for ticket in rows]
 
     def manage_tech(self, name, email, password, org, uid):
         self.execute_query("UPDATE users SET email=(?), name=(?), password=(?), organization=(?) WHERE id=(?)",
                            (email, name, password, org, uid))
         flash('Updated successfully!!', 'alert-success')
-
-
 
 
 class UserManager:
@@ -194,7 +198,6 @@ class TicketManager:
         flash('Ticket created successfully!!', 'alert-success')
 
     def update_ticket(self, ticket_data):
-        print(ticket_data)
         self.db.execute_query("""
             UPDATE tickets SET
             organization=(?), created=(?), updated=(?), title=(?), description=(?), priority=(?), status=(?), creator=(?)
@@ -224,20 +227,21 @@ def index():
 def user():
     if request.method == 'POST':
         ticket_data = {
-            'organization': request.form['organization'],
-            'created': request.form['created'],
-            'updated': request.form['updated'],
+            'organization': request.form['org'],
             'title': request.form['title'],
             'description': request.form['desc'],
+            'created': request.form['created'],
+            'updated': request.form['updated'],
             'priority': request.form['priority'],
             'status': request.form['status'],
-            'creator': current_user.name,
+            'creator': request.form['creator'],
             'id': request.form['uid']
         }
         ticket_manager.update_ticket(ticket_data)
         return render_template('user.html')
     else:
-        return render_template('user.html')
+        tickets = ticket_manager.get_tickets()
+        return render_template('user.html', tickets=tickets)
 
 
 @app.route('/get_tickets')
@@ -296,7 +300,6 @@ def tickets():
         return render_template('tickets.html')
     else:
         tickets = ticket_manager.get_tickets()
-        print(tickets)
         return render_template('tickets.html', tickets=tickets)
 
 
@@ -335,7 +338,15 @@ def login():
             return redirect(url_for('login'))
 
         if db_password == password:
-            login_user(User(email=email, role="user"), remember=True)
+            with sqlite3.connect('database.db') as con:
+                con.row_factory = sqlite3.Row
+                cur = con.cursor()
+                cur.execute(
+                    "SELECT name FROM users WHERE email = (?)", (email,))
+                rows = cur.fetchall()
+            name = rows[0]['name']
+
+            login_user(User(email=email, role="user", name=name), remember=True)
             with sqlite3.connect('database.db') as con:
                 con.row_factory = sqlite3.Row
                 cur = con.cursor()
@@ -344,6 +355,9 @@ def login():
                 rows = cur.fetchall()
             account_type = rows[0]['type']
             if account_type == 'admin':
+                flash('Logged in successfully.', 'alert-success')
+                return redirect(url_for('tickets'))
+            elif account_type == 'tech':
                 flash('Logged in successfully.', 'alert-success')
                 return redirect(url_for('tickets'))
             elif account_type == 'user':
@@ -368,19 +382,17 @@ def logout():
 @app.route('/new_ticket_user', methods=['POST', 'GET'])
 def new_ticket_user():
     if request.method == 'POST':
-        org = request.form['org']
-        creator = request.form['creator']
         title = request.form['title']
         desc = request.form['desc']
         date = request.form['date']
-        assignee = request.form['assignee']
         priority = request.form['priority']
         status = request.form['status']
+        org = request.form['org']
+        creator = request.form['creator']
 
         ticket_data = {
             'title': title,
             'description': desc,
-            'assignee': assignee,
             'creator': creator,
             'organization': org,
             'priority': priority,
@@ -394,14 +406,8 @@ def new_ticket_user():
         return render_template('new_ticket_user.html')
 
 
-@app.route('/user_settings', methods=['POST', 'GET'])
-@login_required(['user'])
-def user_settings():
-    return 'todo'
-
-
 @app.route('/admin_settings', methods=['POST', 'GET'])
-@login_required(['admin'])
+@login_required(['admin', 'tech'])
 def admin_settings():
     if request.method == 'POST':
         usr_email = current_user.get_id()
@@ -431,6 +437,9 @@ def admin_settings():
         name = rows[0]['name']
         org = rows[0]['organization']
         email = rows[0]['email']
+        if current_user.get_role() == 'tech':
+            return render_template('tech_settings.html', name=name, org=org, email=email)
+
         return render_template('admin_settings.html', name=name, org=org, email=email)
 
 
@@ -455,6 +464,8 @@ def manage_organizations():
         org_manager.update_organization(org_data)
         return render_template('manage_organizations.html')
     else:
+        if current_user.get_role() == 'tech':
+            return render_template('manage_organizations_tech.html')
         return render_template('manage_organizations.html')
 
 
@@ -496,6 +507,9 @@ def add_organization():
         db.create_organization(name, email, org_type)
         return render_template('add_organization.html')
     else:
+        if current_user.get_role() == 'tech':
+            return render_template('add_organization_tech.html')
+
         return render_template('add_organization.html')
 
 
@@ -511,6 +525,9 @@ def manage_users():
         db.manage_users(name, email, password, org, uid)
         return render_template('manage_users.html')
     else:
+        if current_user.get_role() == 'tech':
+            return render_template('manage_users_tech.html')
+
         return render_template('manage_users.html')
 
 
@@ -525,12 +542,14 @@ def add_user():
         db.add_user(name, email, password, org)
         return render_template('add_user.html')
     else:
+        if current_user.get_role() == 'tech':
+            return render_template('add_user_tech.html')
         return render_template('add_user.html')
 
 
 
 @app.route('/get_all')
-@login_required(["admin", "tech"])
+@login_required(["any"])
 def get_all():
     return db.get_all()
 
@@ -548,7 +567,7 @@ def get_user():
 
 @app.route('/get_user_tickets')
 def get_user_tickets():
-    return db.get_user_tickets(current_user.get_id())
+    return db.get_user_tickets(current_user.get_name())
 
 
 @app.route('/manage_tech', methods=['GET', 'POST'])

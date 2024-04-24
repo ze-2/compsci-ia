@@ -332,12 +332,6 @@ def new_ticket_user():
         return render_template('new_ticket_user.html')
 
 
-@app.route('/user_settings', methods=['POST', 'GET'])
-@login_required(['user'])
-def user_settings():
-    return 'todo'
-
-
 @app.route('/admin_settings', methods=['POST', 'GET'])
 @login_required(['admin'])
 def admin_settings():
