@@ -305,17 +305,6 @@ def tickets():
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    if (current_user.is_authenticated):
-        role = current_user.get_role()
-        if role == 'admin':
-            flash('Redirecting...', 'alert-primary')
-            return redirect(url_for('tickets'))
-        elif role == 'user':
-            flash('Redirecting...', 'alert-primary')
-            return redirect(url_for('user'))
-        else:
-            return 'huh. how did you get here.'
-
     if request.method == 'POST':
         # Get values from login
         email = request.form['email']
@@ -371,6 +360,17 @@ def login():
 
     # If user gets there by GET - they haven't submitted the form
     else:
+        if (current_user.is_authenticated):
+            print('not logged in')
+            role = current_user.get_role()
+            if role == 'admin':
+                flash('Redirecting...', 'alert-primary')
+                return redirect(url_for('tickets'))
+            elif role == 'user':
+                flash('Redirecting...', 'alert-primary')
+                return redirect(url_for('user'))
+            else:
+                return 'huh. how did you get here.'
         return render_template('login.html')
 
 @app.route('/logout')
