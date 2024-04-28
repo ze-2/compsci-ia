@@ -248,7 +248,6 @@
                 }
             });
         }
-        // TODO: dynamically display locations and requester
         function display(id) {
             $.get('{{ url_for("get_ticket") }}' + '?id=' + id, function (data) {
                 let tickets = data;

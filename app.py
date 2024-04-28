@@ -1,21 +1,50 @@
+# Higher-order functionality on objects.
+# Wrap, or wrappers, are classes that encapsulate the behaviour of another function.
+# Needed for Flask's decorators, as they use wrappers. (decorators are the @app's)
 from functools import wraps
+
+# Python package for working with JSON data.
+# JSON is a format that allows for easy storing and exchanging data, mostly with APIs.
+# Stands for JavaScript Object Notation.
 import json
+
+# Flask is the main class in the flask framework and we use it to create the flask app.
+# render_template lets us render HTML whilst also adding Python variables into the HTML page. It
+# redirect lets use direct the user to a different route or URL in the flask app.
+# url_for is used to generate URLs for specific routes in the flask app. It takes the name of the route function as an argument and uses that to return a corresponding URL.
+# request represents incoming HTTP requests made to the flask app, allowing usage of form data etc.
+# flash is used to display flash messages, which are temporary messages that can be displayed to the user.
+# session is used to represent a user's session data (OSI L5). Stores data specific to a user's session
 from flask import Flask, jsonify, render_template, redirect, url_for, request, flash, session
+
+# Imports the User class from the file model.py, as a module.
+# The User class encapsulates several variables, such as name, role and email, providing accessor and mutator methods to it.
 from model import User
-# from flask_sslify import SSLify
+
+# sqlite3 is a lightweight, disk-based database that is serverless.
 import sqlite3
+
+# LoginManager is used to manage user sessions and as an extension, their logins.
+# The other functions are self-explanatory and moderate several login processes.
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 
 
-# Initial configs of stuff
+# The above creates a Flask application instance.
+# __name__ is a special variable that represents the name of the current module being run.
+# Auth config
 app = Flask(__name__)
-app.secret_key = "your_secret_key"
+
+# Sets the secret key for securing sessions. As sessions are not used, this is never used so it can be kept in plaintext here, but it is also required for sessions to run.
+app.secret_key = "SECRET_KEY"
+# Login management is started by creating an instance of the LoginManager class, which handles user authentication.
+# Initialises the login manager with the Flask app.
 login_manager = LoginManager()
 login_manager.init_app(app)
 
 # On login, creates User object with email, role and name
 @login_manager.user_loader
 def load_user(email):
+    # Retreives user information from the database and loads them.
     with sqlite3.connect('database.db') as con:
         con.row_factory = sqlite3.Row
         cur = con.cursor()
@@ -31,10 +60,13 @@ def load_user(email):
             "SELECT name FROM users WHERE email = (?)", (email,))
         rows = cur.fetchall()
     name = rows[0]['name']
+    # User object stores and makes frequently-accessed information like email, role and name available
     return User(email=email, role=role, name=name)
 
 
 def login_required(roles=["any"]):
+    # Below is a custom decorator function that declares that something requries user authentication.
+    # This allows for role-access control (RAC).
     def wrapper(fn):
         @wraps(fn)
         def decorated_view(*args, **kwargs):
@@ -46,6 +78,7 @@ def login_required(roles=["any"]):
                     auth = True
                     break
             return login_manager.unauthorized() if auth == False else fn(*args, **kwargs)
+            # fn() is the decorated function and is used to check whether the user is authenticated.
         return decorated_view
     return wrapper
 
@@ -174,10 +207,6 @@ class TicketManager:
     def __init__(self, db):
         self.db = db
 
-    def get_tickets(self):
-        rows = self.db.execute_query("SELECT * FROM tickets")
-        return [dict(ticket) for ticket in rows]
-
     def get_ticket(self, ticket_id):
         rows = self.db.execute_query("SELECT * FROM tickets WHERE id=(?)", (ticket_id,))
         return [dict(ticket) for ticket in rows]
@@ -217,15 +246,19 @@ user_manager = UserManager(db)
 ticket_manager = TicketManager(db)
 org_manager = OrganizationManager(db)
 
+# The route for the index page, "/", which returns the login page so that it is the first page that users encounter when using the app.
 @app.route('/')
 def index():
     return render_template('login.html')
 
-
+# ---- USER ---- #
+# Handles both POST and GET requests for the '/user' route.
 @app.route('/user', methods=['POST', 'GET'])
-@login_required(['user'])
+@login_required(['user']) # Decorated function from earlier, now with 'user' so that only users can access this function - restricted to authenticated users only due to the `@login_required` decorator.
 def user():
+    # Runs only if the client is sending a POST request - when they submit a form. The only POST request sent from /user is from a ticket edit.
     if request.method == 'POST':
+        # Extracts form data from the request.
         ticket_data = {
             'organization': request.form['org'],
             'title': request.form['title'],
@@ -237,54 +270,70 @@ def user():
             'creator': request.form['creator'],
             'id': request.form['uid']
         }
+        # Updates the ticket in the database with the new details.
         ticket_manager.update_ticket(ticket_data)
+        # Renders 'user.html' template and returns it as a response.
         return render_template('user.html')
     else:
+        # As the route only accepts POST and GET, this will run if a GET request is made - when the user navigates to this link.
         tickets = ticket_manager.get_tickets()
+        # user.html lists all the tickets that the user submits, with editing functionality
         return render_template('user.html', tickets=tickets)
 
 
 @app.route('/get_tickets')
-@login_required(["tech", "admin"])
+@login_required(["tech", "admin"]) # Same decorator function that allows only tech and admin to use this.
+# Utility class used for rendering from front-end. Returns all tickets in a JSON format.
 def get_tickets():
+    # Utilizes the ticket_manager class.
     tickets = ticket_manager.get_tickets()
     return jsonify(tickets)
 
-
+# Does the same thing as the function above (get_tickets()) except for organizations. Uses the org_manager class.
 @app.route('/get_orgs')
 @login_required(["any"])
 def get_orgs():
     orgs = org_manager.get_orgs()
     return jsonify(orgs)
 
-
+# Retrieve a specific ticket from the database based on the provided ticket ID and return it as a JSON response.
+# Used to render details of one ticket using the ticket ID when user clicks on "More".
 @app.route('/get_ticket')
+# Same decorator function that allows any role to use (has to be logged in)
 @login_required(["any"])
 def get_ticket():
+    # Gotten from the query parameters. Request is sent here from the frontend. Backend processes request and parses it, returning it to the frontend.
     ticket_id = request.args.get('id')
     ticket = ticket_manager.get_ticket(ticket_id)
     return jsonify(ticket)
 
-
+# Retrieve a specific organization from the database based on the provided organization ID and return it as a JSON response.
 @app.route('/get_org')
+# Same decorator function that allows any role to use (has to be logged in)
 @login_required(["any"])
 def get_org():
     org_id = request.args.get('id')
     org = org_manager.get_org(org_id)
     return jsonify(org)
 
-
+# Retrieve all users with the role 'tech' or 'admin' from the database and return them as a JSON response.
+# Utility function to automatically render the creator list
 @app.route('/get_tech_admin')
+# Same decorator function that allows any role to use (has to be logged in)
 @login_required(["any"])
 def get_tech_admin():
+    # Utilizes functionality in the user_manager class
     users = user_manager.get_tech_admin_users()
+    # Request is sent here from the frontend. Backend processes request and parses it, returning it to the frontend.
     return jsonify(users)
 
-
+# Landing page for tech and admin roles.     # Handles both POST and GET requests for the '/tickets' route, which is used to view all tickets and manage them.
 @app.route('/tickets', methods=['GET', 'POST'])
-@login_required(['admin', 'tech'])
+@login_required(['admin', 'tech']) # Decorated function, now such that only tech and admins can access this function.
 def tickets():
+    # Runs only if the client is sending a POST request - when tech/admins submit a form. The only POST request sent from /tickets is from a ticket edit.
     if request.method == 'POST':
+        # Extracts form data from the request.
         ticket_data = {
             'organization': request.form['org'],
             'title': request.form['title'],
@@ -296,22 +345,26 @@ def tickets():
             'creator': request.form['creator'],
             'id': request.form['uid']
         }
+        # Updates the ticket in the database with the new details using the ticket manager class.
         ticket_manager.update_ticket(ticket_data)
+        # Renders 'tickets.html' template and returns it as a response.
         return render_template('tickets.html')
     else:
+        # As the route only accepts POST and GET, this will run if a GET request is made - when the user navigates to this link.
         tickets = ticket_manager.get_tickets()
+        # user.html lists all the tickets that the user submits, with editing functionality
         return render_template('tickets.html', tickets=tickets)
 
-
+# Handles user login and redirection based on their role.
 @app.route('/login', methods=['POST', 'GET'])
 def login():
+    # If the user is not authenticated and the request method is POST, it retrieves the user's email and password from the form, checks the password against the database, logs the user in, and redirects them to the appropriate page.
     if request.method == 'POST':
         # Get values from login
         email = request.form['email']
         password = request.form['password']
 
-        # Gets user's password
-        # yes, plaintext, yes, i will change it, maybe
+        # Attempts to get user's password from db given the user-provided email
         with sqlite3.connect('database.db') as con:
             con.row_factory = sqlite3.Row
             cur = con.cursor()
@@ -320,13 +373,18 @@ def login():
             rows = cur.fetchall()
 
         try:
+            # Attempt to get the password of the user
             db_password = rows[0]['password']
         except:
+            # If an entry with that email doesn't exist (user doesn't exist in the database), an error will occur
             flash(
                 "User doesn't exist - contact your administrator for help.", 'alert-danger')
             return redirect(url_for('login'))
 
         if db_password == password:
+
+            # Gets extra information needed to log the user in - their name
+            # Gets this from the database using their email
             with sqlite3.connect('database.db') as con:
                 con.row_factory = sqlite3.Row
                 cur = con.cursor()
@@ -335,7 +393,8 @@ def login():
                 rows = cur.fetchall()
             name = rows[0]['name']
 
-            login_user(User(email=email, role="user", name=name), remember=True)
+            # Gets extra information needed to log the user in - their role
+            # Gets this from the database using their email
             with sqlite3.connect('database.db') as con:
                 con.row_factory = sqlite3.Row
                 cur = con.cursor()
@@ -343,6 +402,11 @@ def login():
                     "SELECT type FROM users WHERE email = (?)", (email,))
                 rows = cur.fetchall()
             account_type = rows[0]['type']
+
+            # Logs the user in using the User object, which stores easily-accessible information like email, name, and their role.
+            login_user(User(email=email, role=account_type, name=name), remember=True)
+
+            # Upon password authentication, the user is redirected to the appropriate page based on their role.
             if account_type == 'admin':
                 flash('Logged in successfully.', 'alert-success')
                 return redirect(url_for('tickets'))
@@ -353,17 +417,18 @@ def login():
                 flash('Logged in successfully.', 'alert-success')
                 return redirect(url_for('user'))
             else:
-                return 'huh. how did you get here.'
+                return 'Error - contact admin.'
         else:
+            # If the user submits the wrong password. (Submitted password doesn't match db password)
             flash("Incorrect login credentials.", 'alert-danger')
             return render_template('login.html')
 
     # If user gets there by GET - they haven't submitted the form
     else:
+        # This function checks if the user is already authenticated and redirects them to the appropriate page based on their role immediately without having to login or press anything.
         if (current_user.is_authenticated):
-            print('not logged in')
             role = current_user.get_role()
-            if role == 'admin':
+            if role == 'admin' or role == 'tech':
                 flash('Redirecting...', 'alert-primary')
                 return redirect(url_for('tickets'))
             elif role == 'user':
@@ -371,8 +436,12 @@ def login():
                 return redirect(url_for('user'))
             else:
                 return 'huh. how did you get here.'
+
+        # If user not already authenticated, return the login page.
         return render_template('login.html')
 
+# Directly calls the Flask function and logs the user out.
+# Redirects user to login / unauthenticated landing screen.
 @app.route('/logout')
 def logout():
     logout_user()
@@ -405,6 +474,33 @@ def new_ticket_user():
     else:
         return render_template('new_ticket_user.html')
 
+# Handles both GET and POST requests for creating new tickets.
+@app.route('/new', methods=['POST', 'GET'])
+@login_required(['admin', 'tech']) # This function is restricted to authenticated users with the roles 'admin' or 'tech'.
+def new():
+    if request.method == 'POST':
+        title = request.form['title']
+        desc = request.form['desc']
+        date = request.form['date']
+        priority = request.form['priority']
+        status = request.form['status']
+        org = request.form['org']
+        creator = request.form['creator']
+
+        ticket_data = {
+            'title': title,
+            'description': desc,
+            'creator': creator,
+            'organization': org,
+            'priority': priority,
+            'status': status,
+            'created': date,
+        }
+
+        ticket_manager.create_ticket(ticket_data)
+        return render_template('new.html')
+    else:
+        return render_template('new.html')
 
 @app.route('/admin_settings', methods=['POST', 'GET'])
 @login_required(['admin', 'tech'])
@@ -468,33 +564,6 @@ def manage_organizations():
             return render_template('manage_organizations_tech.html')
         return render_template('manage_organizations.html')
 
-
-@app.route('/new', methods=['POST', 'GET'])
-@login_required(['admin', 'tech'])
-def new():
-    if request.method == 'POST':
-        title = request.form['title']
-        desc = request.form['desc']
-        date = request.form['date']
-        priority = request.form['priority']
-        status = request.form['status']
-        org = request.form['org']
-        creator = request.form['creator']
-
-        ticket_data = {
-            'title': title,
-            'description': desc,
-            'creator': creator,
-            'organization': org,
-            'priority': priority,
-            'status': status,
-            'created': date,
-        }
-
-        ticket_manager.create_ticket(ticket_data)
-        return render_template('new.html')
-    else:
-        return render_template('new.html')
 
 
 @app.route('/add_organization', methods=['POST', 'GET'])
