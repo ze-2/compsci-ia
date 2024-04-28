@@ -280,53 +280,6 @@ def user():
         # user.html lists all the tickets that the user submits, with editing functionality
         return render_template('user.html', tickets=tickets)
 
-
-@app.route('/get_tickets')
-@login_required(["tech", "admin"]) # Same decorator function that allows only tech and admin to use this.
-# Utility class used for rendering from front-end. Returns all tickets in a JSON format.
-def get_tickets():
-    # Utilizes the ticket_manager class.
-    tickets = ticket_manager.get_tickets()
-    return jsonify(tickets)
-
-# Does the same thing as the function above (get_tickets()) except for organizations. Uses the org_manager class.
-@app.route('/get_orgs')
-@login_required(["any"])
-def get_orgs():
-    orgs = org_manager.get_orgs()
-    return jsonify(orgs)
-
-# Retrieve a specific ticket from the database based on the provided ticket ID and return it as a JSON response.
-# Used to render details of one ticket using the ticket ID when user clicks on "More".
-@app.route('/get_ticket')
-# Same decorator function that allows any role to use (has to be logged in)
-@login_required(["any"])
-def get_ticket():
-    # Gotten from the query parameters. Request is sent here from the frontend. Backend processes request and parses it, returning it to the frontend.
-    ticket_id = request.args.get('id')
-    ticket = ticket_manager.get_ticket(ticket_id)
-    return jsonify(ticket)
-
-# Retrieve a specific organization from the database based on the provided organization ID and return it as a JSON response.
-@app.route('/get_org')
-# Same decorator function that allows any role to use (has to be logged in)
-@login_required(["any"])
-def get_org():
-    org_id = request.args.get('id')
-    org = org_manager.get_org(org_id)
-    return jsonify(org)
-
-# Retrieve all users with the role 'tech' or 'admin' from the database and return them as a JSON response.
-# Utility function to automatically render the creator list
-@app.route('/get_tech_admin')
-# Same decorator function that allows any role to use (has to be logged in)
-@login_required(["any"])
-def get_tech_admin():
-    # Utilizes functionality in the user_manager class
-    users = user_manager.get_tech_admin_users()
-    # Request is sent here from the frontend. Backend processes request and parses it, returning it to the frontend.
-    return jsonify(users)
-
 # Landing page for tech and admin roles.     # Handles both POST and GET requests for the '/tickets' route, which is used to view all tickets and manage them.
 @app.route('/tickets', methods=['GET', 'POST'])
 @login_required(['admin', 'tech']) # Decorated function, now such that only tech and admins can access this function.
@@ -447,9 +400,11 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-
+# Handles both GET and POST requests for creating new tickets by user roles.
+# Clearer seperated RAC so future devs can easily change user ticket functionality instead of having to change all of admin/tech/user. Using a decorator is more clear than an if statement in the same function.
 @app.route('/new_ticket_user', methods=['POST', 'GET'])
 def new_ticket_user():
+    # Retrieves form data for ticket attributes.
     if request.method == 'POST':
         title = request.form['title']
         desc = request.form['desc']
@@ -459,6 +414,7 @@ def new_ticket_user():
         org = request.form['org']
         creator = request.form['creator']
 
+        # Puts it in a dict to add it to the database for more standardized processing
         ticket_data = {
             'title': title,
             'description': desc,
@@ -469,16 +425,21 @@ def new_ticket_user():
             'created': date,
         }
 
+        # Uses the ticket_manager object functionality to create a new ticket and put it into the database
         ticket_manager.create_ticket(ticket_data)
+        # After ticket creation, stay on the same page.
         return render_template('new_ticket_user.html')
     else:
+        # 'new_ticket_user.html' rendered as a response when the user navigates to this link/route.
         return render_template('new_ticket_user.html')
 
-# Handles both GET and POST requests for creating new tickets.
+# Handles both GET and POST requests for creating new tickets by admin/tech roles.
+# Clearer seperated RAC so future devs can easily change admin/tech ticket functionality instead of having to change all of admin/tech/user. Using a decorator is more clear than an if statement in the same function.
 @app.route('/new', methods=['POST', 'GET'])
 @login_required(['admin', 'tech']) # This function is restricted to authenticated users with the roles 'admin' or 'tech'.
 def new():
     if request.method == 'POST':
+        # Retrieves form data for ticket attributes.
         title = request.form['title']
         desc = request.form['desc']
         date = request.form['date']
@@ -487,6 +448,7 @@ def new():
         org = request.form['org']
         creator = request.form['creator']
 
+        # Puts it in a dict to add it to the database for more standardized processing
         ticket_data = {
             'title': title,
             'description': desc,
@@ -497,20 +459,27 @@ def new():
             'created': date,
         }
 
+        # Uses the ticket_manager object functionality to create a new ticket and put it into the database
         ticket_manager.create_ticket(ticket_data)
+        # After ticket creation, stay on the same page.
         return render_template('new.html')
     else:
+        # 'new.html' rendered as a response when the user navigates to this link/route.
         return render_template('new.html')
 
+# Handles both GET and POST requests for admin settings, which is changing one's email/name/org.
 @app.route('/admin_settings', methods=['POST', 'GET'])
-@login_required(['admin', 'tech'])
+@login_required(['admin', 'tech']) # This function is restricted to authenticated users with the role 'admin'/'tech'.
 def admin_settings():
+    # POST req --> form is sent. The only reason why a form would be sent is to request an update/edit to their details.
     if request.method == 'POST':
+        # Retrieves form data for user attributes.
         usr_email = current_user.get_id()
         name = request.form['name']
         org = request.form['org']
         email = request.form['email']
 
+        # Puts it in a dict to add it to the database for more standardized processing
         user_data = {
             'email': email,
             'name': name,
@@ -518,11 +487,16 @@ def admin_settings():
             'email': usr_email
         }
 
+        # Updates the user's details in the database with the new details using user_manager functionality
         user_manager.update_user_settings(user_data)
+
+        # Renders the 'admin_settings.html' template with the updated user details.
         return render_template('admin_settings.html', name=name, org=org, email=email)
     else:
+        # Fetches the current user's details from the database using their email.
         email = current_user.get_id()
 
+        # Gets user's name, organization and email from the `users` table.
         with sqlite3.connect('database.db') as con:
             con.row_factory = sqlite3.Row
             cur = con.cursor()
@@ -533,22 +507,30 @@ def admin_settings():
         name = rows[0]['name']
         org = rows[0]['organization']
         email = rows[0]['email']
+
+        # If the user's role is tech, return the HTML page for their role.
         if current_user.get_role() == 'tech':
             return render_template('tech_settings.html', name=name, org=org, email=email)
 
+        # Renders 'admin_settings.html' template with the current user's details.
         return render_template('admin_settings.html', name=name, org=org, email=email)
 
-
+# To manage organizations, handles both GET/POST requests.
 @app.route('/manage_organizations', methods=['POST', 'GET'])
-@login_required(['admin', 'tech'])
+@login_required(['admin', 'tech']) # RAC so only these roles can manage users
 def manage_organizations():
+    # For POST requests, it updates the organization details in the database and redirects the user back to the management page.
+    # POST requests can only be sent when the user is editing something
     if request.method == 'POST':
+
+        # Retrieve form data
         name = request.form['name']
         email = request.form['email']
         org_type = request.form['type']
         org_id = request.form['org_id']
         old_org = request.form['old_org']
 
+        # Puts it in a dict to add it to the database for more standardized processing
         org_data = {
             'name': name,
             'email': email,
@@ -557,137 +539,230 @@ def manage_organizations():
             'old_org': old_org
         }
 
+        # Updates the user's details in the database with the new details using org_manager functionality
         org_manager.update_organization(org_data)
+
+        # After updating, render org management page that they were at.
+        if current_user.get_role() == 'tech':
+            return render_template('manage_organizations_tech.html')
         return render_template('manage_organizations.html')
     else:
+        # For GET requests, it simply renders the 'manage_organizations.html' template based on the user's role.
         if current_user.get_role() == 'tech':
             return render_template('manage_organizations_tech.html')
         return render_template('manage_organizations.html')
 
 
-
+# Route for adding a new organization. Handles both POST and GET requests.
 @app.route('/add_organization', methods=['POST', 'GET'])
-@login_required(['admin', 'tech'])
+@login_required(['admin', 'tech']) # RAC so only these roles can manage users
 def add_organization():
+    # For POST requests, it inserts the new organization into the database and redirects the user back to the add organization page.
+    # POST requests can only be sent when the user adds a new organization
     if request.method == 'POST':
+        # Get form data
         name = request.form['name']
         email = request.form['email']
         org_type = request.form['type']
+
+        # Insert new organisation to database.
         db.create_organization(name, email, org_type)
+
+        # After updating, render add organization page that they were at.
+        if current_user.get_role() == 'tech':
+            return render_template('add_organization_tech.html')
+
         return render_template('add_organization.html')
     else:
+    # For GET requests, it simply renders the 'add_organization.html' template based on the user's role.
         if current_user.get_role() == 'tech':
             return render_template('add_organization_tech.html')
 
         return render_template('add_organization.html')
 
-
+# Manages users, handles POST and GET requests
 @app.route('/manage_users', methods=['GET', 'POST'])
-@login_required(['admin', 'tech'])
+@login_required(['admin', 'tech']) # RAC so only these roles can manage users
 def manage_users():
+    # For POST requests, it inserts the updated user into the database and redirects the user back to the manage user page.
+    # POST requests can only be sent when the user updates an org
     if request.method == 'POST':
+        # Get form data
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
         org = request.form['org']
         uid = request.form['uid']
+
+        # Insert new organisation to database.
         db.manage_users(name, email, password, org, uid)
+        # After updating, render manage organization page that they were at.
+        if current_user.get_role() == 'tech':
+            return render_template('manage_users_tech.html')
+
         return render_template('manage_users.html')
     else:
+        # For GET requests, it simply renders the 'add_organization.html' template based on the user's role.
         if current_user.get_role() == 'tech':
             return render_template('manage_users_tech.html')
 
         return render_template('manage_users.html')
 
-
+# Adds users, handles POST and GET requests
 @app.route('/add_user', methods=['GET', 'POST'])
-@login_required(['admin', 'tech'])
+@login_required(['admin', 'tech']) # RAC so only these roles can manage users
 def add_user():
+    # For POST requests, it adds the updated user into the database and redirects the user back to the add user page.
+    # POST requests can only be sent when the user creates a new user
     if request.method == 'POST':
+        # Get form data
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
         org = request.form['org']
+
+        # Insert new organisation to database.
         db.add_user(name, email, password, org)
+
+        # After updating, render add user page that they were at.
+
+        if current_user.get_role() == 'tech':
+            return render_template('add_user_tech.html')
+
         return render_template('add_user.html')
     else:
+        # For GET requests, it simply renders the 'add_user.html' template based on the user's role.
         if current_user.get_role() == 'tech':
             return render_template('add_user_tech.html')
         return render_template('add_user.html')
 
-
-
-@app.route('/get_all')
-@login_required(["any"])
-def get_all():
-    return db.get_all()
-
-@app.route('/get_users')
-@login_required(["admin", "tech"])
-def get_users():
-    return db.get_users()
-
-@app.route('/get_user')
-@login_required(["admin", "tech"])
-def get_user():
-    uid = request.args.get('uid')
-    return db.get_user(uid)
-
-
-@app.route('/get_user_tickets')
-def get_user_tickets():
-    return db.get_user_tickets(current_user.get_name())
-
-
+# Manages tech users, handles POST and GET requests
 @app.route('/manage_tech', methods=['GET', 'POST'])
-@login_required(['admin'])
+@login_required(['admin']) # RAC so only admin can manage techs
 def manage_tech():
+    # For POST requests, it updates tech in the database and redirects the user back to the manage tech page.
+    # POST requests can only be sent when admin creates a new tech
     if request.method == 'POST':
+        # Gets from data
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
         org = request.form['org']
         uid = request.form['uid']
+
+        # Updates in DB
         db.manage_tech(name, email, password, org, uid)
+        # Renders the 'manage_tech.html' (same screen) after updating.
         return render_template('manage_tech.html')
     else:
+        # For GET requests, it simply renders the 'manage_tech.html'
         return render_template('manage_tech.html')
 
+# Adds tech users, handles POST and GET requests
 @app.route('/add_tech', methods=['GET', 'POST'])
-@login_required(['admin'])
+@login_required(['admin']) # RAC so only admin can manage techs
 def add_tech():
+    # For POST requests, it adds the updated user into the database and redirects the user back to the add user page.
+    # POST requests can only be sent when the admin creates a new tech
     if request.method == 'POST':
+        # Gets form data
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
         org = request.form['org']
+
+        # Updates in DB
         db.add_tech(name, email, password, org)
+        # Renders the 'add_tech.html' (same screen) after updating.
         return render_template('add_tech.html')
     else:
+        # For GET requests, it simply renders the 'add_tech.html'
         return render_template('add_tech.html')
 
+# Utility function to get all users from db.
+@app.route('/get_all')
+@login_required(["any"]) # RAC, any logged-in user can access this endpoint
+def get_all():
+    return db.get_all()
 
+# Utility function to get all normal users (non-tech, non-admin) from db.
+@app.route('/get_users')
+@login_required(["admin", "tech"]) # RAC, only admin and tech can access this endpoint
+def get_users():
+    return db.get_users()
+
+# Utility function to get one user from db.
+@app.route('/get_user')
+@login_required(["admin", "tech"]) # RAC, only admin and tech can access this endpoint
+def get_user():
+    # Gets specific user through their unique ID
+    uid = request.args.get('uid')
+    return db.get_user(uid)
+
+
+# Utility class used for rendering from front-end. Returns all tickets in a JSON format.
+@app.route('/get_tickets')
+@login_required(["tech", "admin"]) # Same decorator function that allows only tech and admin to use this.
+def get_tickets():
+    # Utilizes the ticket_manager class.
+    tickets = ticket_manager.get_tickets()
+    return jsonify(tickets)
+
+# Does the same thing as the function above (get_tickets()) except for organizations. Uses the org_manager class.
+@app.route('/get_orgs')
+@login_required(["any"])
+def get_orgs():
+    orgs = org_manager.get_orgs()
+    return jsonify(orgs)
+
+# Retrieve a specific ticket from the database based on the provided ticket ID and return it as a JSON response.
+# Used to render details of one ticket using the ticket ID when user clicks on "More".
+@app.route('/get_ticket')
+# Same decorator function that allows any role to use (has to be logged in)
+@login_required(["any"])
+def get_ticket():
+    # Gotten from the query parameters. Request is sent here from the frontend. Backend processes request and parses it, returning it to the frontend.
+    ticket_id = request.args.get('id')
+    ticket = ticket_manager.get_ticket(ticket_id)
+    return jsonify(ticket)
+
+# Retrieve a specific organization from the database based on the provided organization ID and return it as a JSON response.
+@app.route('/get_org')
+# Same decorator function that allows any role to use (has to be logged in)
+@login_required(["any"])
+def get_org():
+    org_id = request.args.get('id')
+    org = org_manager.get_org(org_id)
+    return jsonify(org)
+
+# Retrieve all tickets associated with (created by) the current user as a JSON response.
+@app.route('/get_user_tickets')
+def get_user_tickets():
+    return db.get_user_tickets(current_user.get_name())
+
+# Retrieve all users with the role 'tech' or 'admin' from the database and return them as a JSON response.
+# Utility function to automatically render the creator list
+@app.route('/get_tech_admin')
+# Same decorator function that allows any role to use (has to be logged in)
+@login_required(["any"])
+def get_tech_admin():
+    # Utilizes functionality in the user_manager class
+    users = user_manager.get_tech_admin_users()
+    # Request is sent here from the frontend. Backend processes request and parses it, returning it to the frontend.
+    return jsonify(users)
+
+# Utility function to get all tech users from db.
 @app.route('/get_techs')
-@login_required(["admin", "tech"])
+@login_required(["admin", "tech"]) # RAC, only admin and tech users can use this function.
 def get_techs():
     return db.get_techs()
 
-
+# Utility function to get all organizations from db.
 @app.route('/render_orgs')
-@login_required(['any'])
+@login_required(['any']) # Utility function to get all users from db.
 def render_orgs():
     return db.render_orgs()
 
-
-@app.route('/get_user_org')
-@login_required(['admin', 'tech'])
-def get_user_org():
-    name = request.args.get('id')
-    return db.get_user_org(name)
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
+# RUns the app.
 if __name__ == '__main__':
     app.run(debug=True)
