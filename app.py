@@ -13,7 +13,7 @@ app.secret_key = "your_secret_key"
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-
+# On login, creates User object with email, role and name
 @login_manager.user_loader
 def load_user(email):
     with sqlite3.connect('database.db') as con:
