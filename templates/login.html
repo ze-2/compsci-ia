@@ -1,34 +1,48 @@
 {% extends 'layout.html' %}
+<!-- This template extends the 'layout.html' template, which likely contains the common structure and layout of the pages. -->
 
 {% block title %} Login {% endblock %}
+<!-- This block sets the title of the page to "Login". It overrides the 'title' block defined in the base template. -->
 
 {% block body %}
+<!-- This block defines the content of the page body. It overrides the 'body' block defined in the base template. -->
 
 <body style="overflow-y: hidden;">
+    <!-- The 'overflow-y: hidden' style prevents vertical scrolling on the page. -->
+
     <div class="grid place-content-center my-40">
+        <!-- This div creates a grid container and centers its content vertically and horizontally using utility classes. -->
+
         <div class="card shadow mx-auto" style="max-width: 380px; margin-top:200px;">
+            <!-- This div represents a card component with a shadow effect. It has a maximum width of 380px and a top margin of 200px. -->
+
             <div class="card-body">
+                <!-- This div represents the body of the card component. -->
+
                 <h4 class="card-title mb-4">Sign in</h4>
-                <form action="/login", method="POST">
+                <!-- This heading displays the title of the card, which is "Sign in". -->
+
+                <form action="/login" method="POST">
+                    <!-- This form submits the login data to the "/login" endpoint in the backend using the POST method. -->
+
                     <div class="mb-3">
                         <input class="form-control" placeholder="Email" type="email" name="email" id="email" required>
+                        <!-- This input field is for the user's email. It has a "form-control" class for styling and is required. -->
                     </div>
+
                     <div class="mb-3">
                         <input class="form-control" placeholder="Password" name="password" id="password" type="password"
                             required>
+                        <!-- This input field is for the user's password. It has a "form-control" class for styling, is of type "password" (inputs appear as dots), and is required. -->
                     </div>
 
-                    <!-- <div class="mb-3">
-                    <a href="#" class="float-end">Forgot password?</a>
-                    <label class="form-check">
-                        <input type="checkbox" class="form-check-input" checked="">
-                        <span class="form-check-label">Remember</span>
-                    </label>
-                </div> -->
                     <div class="mb-4">
-                        <button type="submit" class="btn btn-primary w-100"> Login </button>
+                        <!-- This button submits the login form. -->
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
                     </div>
+
                 </form>
+
             </div>
         </div>
     </div>

@@ -82,163 +82,298 @@ def login_required(roles=["any"]):
         return decorated_view
     return wrapper
 
+# OOP here allows me to encapsulate the data of a manager, which is a classified role.
+# It also abstracts certain methods. Future devs won't need to manage how database operations are done, only that they need to call 'update_organization' etc.
+# Further development can now also inherit, for example DepartmentManager can inherit from this class.
+
+# OrganizationManager class provides functionality for managing organizations in the application.
+# Interacts with the database to perform operations such as updating organization details and retrieving organization data.
 class OrganizationManager:
+    """
+    Attributes:
+        db (Database): An instance of the Database class, which is used to execute SQL queries.
+
+    Methods:
+        update_organization(org_data): Updates an organization in the database.
+        get_orgs(): Retrieves all organizations from the database.
+        get_org(org_id): Retrieves a specific organization from the database.
+    """
     def __init__(self, db):
+        # Initialize OrganizationManager with the provided database object.
         self.db = db
 
     def update_organization(self, org_data):
+        # Execute an SQL query to update the details of an organization in the 'organization' table.
+        # Update all fields: email, name, type
+        # Updates using ID
         self.db.execute_query("""
             UPDATE organizations SET email=(?), name=(?), type=(?) WHERE id=(?)
         """, (
             org_data['email'], org_data['name'], org_data['type'], org_data['id']
         ))
+
+        # Execute an SQL query to update the organization name in the 'users' table for users associated with the old organization name
         self.db.execute_query("""
             UPDATE users SET organization=(?) WHERE organization=(?)
         """, (
             org_data['name'], org_data['old_org']
         ))
+        # Flash a success message indicating that the update was successful
         flash('Updated successfully!!', 'alert-success')
 
-
+    # Returns all organizations from the database as a list of dictionary items.
     def get_orgs(self):
         rows = self.db.execute_query("SELECT * FROM organizations")
         return [dict(org) for org in rows]
 
+    # Execute an SQL query to retrieve all the details of a specific organization from the 'organizations' table
     def get_org(self, org_id):
         rows = self.db.execute_query("SELECT * FROM organizations WHERE id=(?)", (org_id,))
         return [dict(org) for org in rows]
 
+# The Database class provides a simplified interface for executing SQL queries and interacting with the SQLite database.
+# It encapsulates the database connection and provides methods for creating, retrieving, and updating data in the database.
+
 class Database:
+    # Initialize the Database object with the provided database name.
     def __init__(self, db_name):
+        # Assign the provided database name to the instance variable 'db_name' to access the database later
         self.db_name = db_name
 
+    # Execute any custom SQL query with optional parameters.
     def execute_query(self, query, params=()):
+        # Connects to the SQLITE instance for R/W
         with sqlite3.connect(self.db_name) as con:
+            # Set the row factory to sqlite3.Row to return rows as dictionaries
             con.row_factory = sqlite3.Row
+            # Create a cursor object to execute SQL queries
             cur = con.cursor()
+            # Execute the queries
             cur.execute(query, params)
+            # Receives the data (if applicable)
             rows = cur.fetchall()
+            # Commit the changes to the database
             con.commit()
+        # Returns as a list containing results
         return rows
 
-
+    # Create a new organization in the database.
+    # Takes in name, email, and organization type as inputs.
     def create_organization(self, name, email, org_type):
+        # Execute an SQL query to insert a new organization into the 'organizations' table
         self.execute_query("INSERT INTO organizations(name, email, type) VALUES (?, ?, ?)",
                            (name, email, org_type))
+        # Flash a success message indicating that the organization was created successfully
         flash("Created successfully!", 'alert-success')
 
+    # Update the details of a user in the database.
+    # Name, email, password, org as inputs. ID to identify/select the entry to edit.
     def manage_users(self, name, email, password, org, uid):
+        # Execute an SQL query to select the email of the user with the specified ID from the 'users' table
         old_email = self.execute_query("SELECT email FROM users WHERE id=(?)", (uid,))[0][0]
+        # Execute an SQL query to update the user details in the 'users' table
         self.execute_query("UPDATE users SET email=(?), name=(?), password=(?), organization=(?) WHERE id=(?)",
                            (email, name, password, org, uid))
+        # Execute an SQL query to update the creator and organization of tickets associated with the user's old email
         self.execute_query("UPDATE tickets SET creator=(?), organization=(?) WHERE creator=(?)",
                            (email, org, old_email))
+        # Flash a success message indicating that the user was updated successfully
         flash('Updated successfully!!', 'alert-success')
 
+    # Add a new user to the database.
+    # Takes in name, email, password and organization as an email.
     def add_user(self, name, email, password, org):
+        # Execute an SQL query to insert a new user into the 'users' table with the type 'user'
         self.execute_query("INSERT INTO users(name, email, password, type, organization) VALUES (?, ?, ?, ?, ?)",
                            (name, email, password, "user", org))
+        # Flash a success message indicating that the user was created successfully
         flash("Created successfully!", 'alert-success')
 
+    # Retrieve all users with the type 'user' from the database.
+    # Returns a JSON object of a list of dictionary objects, each representing a user.
     def get_users(self):
+        # Execute an SQL query to select all users with the type 'user' from the 'users' table
         rows = self.execute_query("SELECT * FROM users where type='user'")
+        # Convert each row to a dictionary
         users = [dict(row) for row in rows]
+        # Return the users as a JSON object
         return json.dumps(users)
 
+    # Retrieve all users of any type from the database.
     def get_all(self):
+        # Execute an SQL query to select all users with any type from the 'users' table
         rows = self.execute_query("SELECT * FROM users")
+        # Convert each row to a dictionary
         users = [dict(row) for row in rows]
+        # Return the users as a JSON object
         return json.dumps(users)
 
+    # Add a new tech user to the database.
+    # Takes in name, email, password and organization as an input
     def add_tech(self, name, email, password, org):
+        # Execute an SQL query to insert a new user into the 'users' table with the type 'tech'
         self.execute_query("INSERT INTO users(name, email, password, type, organization) VALUES (?, ?, ?, ?, ?)",
                            (name, email, password, "tech", org))
+        # Flash a success message indicating that the tech user was created successfully
         flash("Created successfully!", 'alert-success')
 
+    # Retrieve all tech users from the database.
     def get_techs(self):
+        # Execute an SQL query to select all techs from the 'users' table
         rows = self.execute_query("SELECT * FROM users where type='tech'")
+        # Converts it to list of dictionary objects, each representing a user.
         techs = [dict(row) for row in rows]
+        # Return the tech users as a JSON object
         return json.dumps(techs)
 
+    # Retrieve all organizations from the database.
     def render_orgs(self):
+        # Execute an SQL query to select all organizations with any type from the 'users' table
         rows = self.execute_query("SELECT * FROM organizations")
+        # Converts it to list of dictionary objects, each representing a organization.
         orgs = [dict(row) for row in rows]
+        # Return the organizations as a JSON object
         return json.dumps(orgs)
 
+    # Retrieves the organization a specific user is associated with
     def get_user_org(self, name):
+        # Execute an SQL query to retrieve the organization a specific user is associated with
         rows = self.execute_query("SELECT organization FROM users WHERE name=(?)", (name,))
+        # Returns the name of the organization
         return rows[0][0]
 
+    # retrieve a specific user using their ID
     def get_user(self, uid):
+        # Execute an SQL query to retrieve the specific user using their ID
         rows = self.execute_query("SELECT * FROM users WHERE id=(?)", (uid,))
+        # Formats the user
         user = [dict(row) for row in rows]
+        # Return the specific user as a JSON object
         return json.dumps(user)
 
+    # retrieve all tickets a specific user is associated with
     def get_user_tickets(self, name):
-        print(name)
+        # Execute an SQL query to retrieve the tickets a user created
         rows = self.execute_query("SELECT * FROM tickets WHERE creator=(?)", (name,))
+        # Formats and returns the tickets
         return [dict(ticket) for ticket in rows]
 
+    # Update the details of a tech user in the database.
+    # Name, email, password, org as inputs. ID to identify/select the entry to edit.
     def manage_tech(self, name, email, password, org, uid):
+        # Execute an SQL query to update the tech details in the 'users' table
         self.execute_query("UPDATE users SET email=(?), name=(?), password=(?), organization=(?) WHERE id=(?)",
                            (email, name, password, org, uid))
+        # Flash a success message indicating that the user was updated successfully
         flash('Updated successfully!!', 'alert-success')
 
 
+# The UserManager class is responsible for managing user-related operations in the database.
+# It provides methods to update user settings and retrieve tech and admin users.
 class UserManager:
+
     def __init__(self, db):
+       # Initialize the UserManager instance with a database connection.
+
+       # Store the database connection object in the instance variable 'db'
+       # This allows the UserManager instance to access the database connection throughout its lifecycle
         self.db = db
 
+    # Update the settings of a user in the database based on the provided user data.
+    # Email, name, organization as an input. Email used as UID.
     def update_user_settings(self, user_data):
+
+       # Execute an SQL UPDATE query to update the user's email, name, and organization in the 'users' table
+       # The query uses placeholders `(?)` to prevent SQL injection attacks
         self.db.execute_query("""
-            UPDATE users SET email=(?), name=(?), organization=(?) WHERE email=(?)
+            UPDATE users
+            SET email=(?), name=(?),  organization=(?)
+            WHERE email=(?)
         """, (
-            user_data['email'], user_data['name'], user_data['organization'], user_data['email']
+             user_data['email'], user_data['name'], user_data['organization'], user_data['email']
         ))
+
+       # Display a success message to the user that the user has been updated successfully
         flash('Updated successfully!', 'alert-success')
 
+    # Retrieve all users with the type 'tech' or 'admin' from the database.
     def get_tech_admin_users(self):
+       # Execute an SQL SELECT query to retrieve all users with the type 'tech' or 'admin' from the 'users' table
         rows = self.db.execute_query("SELECT * FROM users WHERE type='tech' OR type='admin'")
+
+       # Convert the result rows to a list of dictionaries, where each dictionary represents a user and contains user data. Easier to access data.
         return [dict(user) for user in rows]
 
-
-
+# Responsible for managing ticket-related operations in the database.
+# Provides methods to retrieve tickets, create new tickets, and update existing tickets.
 class TicketManager:
     def __init__(self, db):
+        # Store the database connection object in the instance variable 'db' on  initialization
+        # This allows the TicketManager  instance to access the database connection throughout its lifecycle
         self.db = db
 
+    # Retrieve a specific ticket from the database based on its ID (taken as input)
     def get_ticket(self, ticket_id):
+
+        # Execute an SQL SELECT query to retrieve the ticket with the specified ID from the 'tickets' table
+        # The query uses a placeholder (?) for the ticket ID to prevent SQL injection attacks
         rows = self.db.execute_query("SELECT * FROM tickets WHERE id=(?)", (ticket_id,))
+
+        # Convert the result rows to a list of dictionaries, where each dictionary represents a ticket and contains ticket data. Easier to access data.
         return [dict(ticket) for ticket in rows]
 
-
+    # Retrieve all tickets from the database.
     def get_tickets(self):
+        # Execute an SQL SELECT query to retrieve all tickets from the 'tickets' table
+        # The query selects all columns (*) from the 'tickets' table
         rows = self.db.execute_query("SELECT * FROM tickets")
+
+        # Converts and returns the result rows to a list of dictionaries, where each dictionary represents a ticket and contains ticket data.
         return [dict(ticket) for ticket in rows]
 
+    # Create a new ticket in the database based on the provided ticket data.
     def create_ticket(self, ticket_data):
-        self.db.execute_query("""
-            INSERT INTO tickets(title, description, creator, organization, priority, status, created)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            ticket_data['title'], ticket_data['description'], ticket_data['creator'],
-            ticket_data['organization'], ticket_data['priority'], ticket_data['status'], ticket_data['created']
-        ))
-        flash('Ticket created successfully!!', 'alert-success')
 
+       # Execute an SQL INSERT query to insert a new ticket into the 'tickets' table with the provided data (required in the ticket field)
+       # The query uses placeholders (?) to prevent SQL injection attacks
+       self.db.execute_query("""
+           INSERT INTO tickets(title, description, creator, organization, priority, status, created)
+           VALUES (?, ?, ?, ?, ?, ?, ?)
+       """, (
+           ticket_data['title'],
+           ticket_data['description'],
+           ticket_data['creator'],
+           ticket_data['organization'],
+           ticket_data['priority'],
+           ticket_data['status'],
+           ticket_data['created']
+       ))
+       # Display a success message to the user using the flash function
+       flash('Ticket created successfully!!', 'alert-success')
+
+    # Update an existing ticket in the database based on provided ticket data.
     def update_ticket(self, ticket_data):
-        self.db.execute_query("""
-            UPDATE tickets SET
-            organization=(?), created=(?), updated=(?), title=(?), description=(?), priority=(?), status=(?), creator=(?)
-            WHERE id=(?)
-        """, (
-            ticket_data['organization'], ticket_data['created'], ticket_data['updated'],
-            ticket_data['title'], ticket_data['description'],
-            ticket_data['priority'], ticket_data['status'],
-            ticket_data['creator'], ticket_data['id']
-        ))
-        flash('Updated successfully!!', 'alert-success')
 
+       # Execute an SQL UPDATE query to update the ticket with the specified ID using the provided data
+       # The query uses placeholders (?) to prevent SQL injection attacks
+       self.db.execute_query("""
+           UPDATE tickets
+           SET organization=(?), created=(?), updated=(?), title=(?), description=(?), priority=(?), status=(?), creator=(?)
+           WHERE id=(?)
+       """, (
+           ticket_data['organization'],
+           ticket_data['created'],
+           ticket_data['updated'],
+           ticket_data['title'],
+           ticket_data['description'],
+           ticket_data['priority'],
+           ticket_data['status'],
+           ticket_data['creator'],
+           ticket_data['id']
+       ))
+
+       # Display a success message to the user using the flash function
+       flash('Updated successfully!!', 'alert-success')
 
 # Initialize database and managers
 db = Database('database.db')

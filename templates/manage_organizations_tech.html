@@ -1,36 +1,45 @@
 {% extends 'layout.html' %}
+<!-- This template extends the 'layout.html' template, which likely contains the common structure and layout of the pages. -->
 
 {% block title %} Manage organizations {% endblock %}
+<!-- This block sets the title of the page to "Manage organizations". It overrides the 'title' block defined in the base template. -->
 
 {% block body %}
+<!-- This block defines the content of the page body. It overrides the 'body' block defined in the base template. -->
 
 <body class="aside-mini">
+    <!-- The 'aside-mini' class is likely used for styling purposes, possibly to indicate a minimized or compact sidebar. -->
 
     <b class="screen-overlay"></b>
+    <!-- This element may be used as an overlay or background for certain interactions or states. -->
+
     <aside class="navbar-aside" id="offcanvas_aside">
+        <!-- This aside element represents a sidebar navigation menu. -->
         <nav>
             <ul class="menu-aside">
+                <!-- The sidebar menu items are defined as list items within this unordered list. -->
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('tickets') }}"><i
-                            class="icon material-icons md-sticky_note_2"></i>
+                    <a class="menu-link" href="{{ url_for('tickets') }}">
+                        <i class="icon material-icons md-sticky_note_2"></i>
                         <span class="text">Tickets</span>
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
+                    <a class="menu-link" href="{{ url_for('new') }}">
+                        <i class="icon material-icons md-plus"></i>
                         <span class="text">Create new</span>
                     </a>
                 </li>
                 <hr>
                 <li class="menu-item active">
-                    <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
-                            class="icon material-icons md-settings"></i>
+                    <a class="menu-link" href="{{ url_for('admin_settings') }}">
+                        <i class="icon material-icons md-settings"></i>
                         <span class="text">Settings</span>
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('logout') }}"><i
-                            class="icon material-icons text-danger md-log_out"></i>
+                    <a class="menu-link" href="{{ url_for('logout') }}">
+                        <i class="icon material-icons text-danger md-log_out"></i>
                         <span class="text">Settings</span>
                     </a>
                 </li>
@@ -38,7 +47,9 @@
                 <br>
         </nav>
     </aside>
+
     <main class="main-wrap">
+        <!-- This main element represents the main content area of the page. -->
         <section class="content-main">
             <div class="content-header">
                 <h2 class="content-title">Manage Organizations</h2>
@@ -48,23 +59,29 @@
                 <div class="card-body">
                     <div class="row gx-5">
                         <aside class="col-lg-3 border-end">
+                            <!-- This aside element represents a secondary navigation menu within the main content area. -->
                             <nav class="nav nav-pills flex-lg-column mb-4">
+                                <!-- Contains the things (links to pages) that tech users can do -->
+                                <!-- Change their own settings -->
                                 <a class="nav-link" aria-current="page" href="{{ url_for('admin_settings') }}">Your
                                     Profile</a>
+                                <!-- Manage organizations -->
                                 <a class="nav-link active" href="{{ url_for('manage_organizations') }}">Manage
                                     Organizations</a>
-                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add
-                                    Organization</a>
+                                <!-- Add organizations -->
+                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add Organization</a>
+                                <!-- Manage users -->
                                 <a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a>
-                                <a class="nav-link" href="{{ url_for('add_user') }}">Add
-                                    Users</a>
+                                <!-- Add users -->
+                                <a class="nav-link" href="{{ url_for('add_user') }}">Add Users</a>
                         </aside>
+                        <!-- Sets up the template for the organizations to be shown -->
                         <div class="col-lg-9">
-
                             <section class="content-body p-xl-4">
                                 <div class="table-responsive" style="overflow-x: auto;">
                                     <table class="table table-hover">
                                         <thead>
+                                            <!-- Details that will be shown in an organization display in the table -->
                                             <tr>
                                                 <th>#ID</th>
                                                 <th scope="col">Name</th>
@@ -74,8 +91,10 @@
                                             </tr>
                                         </thead>
                                         <tbody id="table-content">
+                                            <!-- The table content will be dynamically populated here using JavaScript. -->
                                         </tbody>
                                     </table>
+                                    <!-- Return to top of table if there are too many entries -->
                                     <a href="#" class="btn btn-light">Back to top</a>
                                 </div>
                             </section>
@@ -84,21 +103,28 @@
                 </div>
             </div>
         </section>
+
         <!-- Modal -->
+        <!-- Appears when user clicks on More -->
         <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+            <!-- This div represents a modal (popup) dialog. -->
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
-                    <form action="{{ url_for('manage_organizations') }}" , method="POST">
+                    <!-- If a form is sent, it means that the user has requested an update to an organization -->
+                    <!-- This form submits the login data to the "/manage_organizations" endpoint in the backend using the POST method. -->
+                    <form action="{{ url_for('manage_organizations') }}" method="POST">
                         <div class="modal-header">
                             <h1 class="modal-title fs-5" id="modalLabel"></h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body" id="modal-body">
-
+                            <!-- The modal body content will be dynamically populated using JavaScript. -->
+                            <!-- Input fields will also be entered automatically, which will then be submitted to "/manage_organizations" -->
                         </div>
                         <div class="modal-footer">
-                            <!-- <button type="button" class="btn btn-outline-danger">Delete organization</button> -->
+                            <!-- Enable editing  -->
                             <button type="button" onclick="edit();" class="btn btn-light">Edit</button>
+                            <!-- This button submits the update form. -->
                             <button type="submit" id="submit" class="btn btn-primary" disabled>Save changes</button>
                         </div>
                     </form>
@@ -107,81 +133,102 @@
         </div>
     </main>
     <script>
+        // Get the table element with the ID 'table-content'
         let table = document.getElementById('table-content');
+        // Call the render_table() function to populate the table with data
         render_table();
 
+        // Function to render the table with organization data
         function render_table() {
+            // Clear the existing table content
             table.innerHTML = '';
+            // Make an AJAX GET request to fetch the organization data
             $.get('{{ url_for("get_orgs") }}', function (data) {
                 let tickets = data;
+                // Get the number of organizations
                 let num_entires = Object.keys(tickets).length;
                 to_display = num_entires;
+                // Iterate over the organizations and generate table rows
                 for (let i = 0; i < to_display; ++i) {
                     let ticket = tickets[i];
                     console.log(ticket);
+                    // Extract the organization's ID, name, email, and type
                     let id = ticket['id'];
                     let name = ticket['name'];
                     let email = ticket['email'];
                     let type = ticket['type'];
-                    table.innerHTML += ` <tr>
-            <td>` + id + `</td>
-            <td>` + name + `</td>
-            <td>` + email + `</td>
-            <td>` + type + `</td>
-            <td class="text-end">
-                <button data-bs-toggle="modal" data-bs-target="#modal" id="` + id + `" onclick="display(this.id);" class="btn btn-light">More</button
-            </td>
-            </tr>`;
+                    // Generate the table row HTML with the organization's data
+                    table.innerHTML += `
+                    <tr>
+                        <td>` + id + `</td>
+                        <td>` + name + `</td>
+                        <td>` + email + `</td>
+                        <td>` + type + `</td>
+                        <td class="text-end">
+                            <button data-bs-toggle="modal" data-bs-target="#modal" id="` + id + `" onclick="display(this.id);" class="btn btn-light">More</button>
+                        </td>
+                    </tr>`;
                 }
             });
         }
 
+        // Function to display the modal with detailed organization information
         function display(id) {
+            // Make an AJAX GET request to fetch the detailed organization data
             $.get('{{ url_for("get_org") }}' + '?id=' + id, function (data) {
                 let tickets = data;
                 let ticket = tickets[0];
                 console.log(ticket);
+                // Extract the organization's ID, name, email, and type
                 let id = ticket['id'];
                 let name = ticket['name'];
                 let email = ticket['email'];
                 let type = ticket['type'];
+                // Set the modal title with the organization's name and ID
                 document.getElementById('modalLabel').innerHTML = name + " (#" + id + ")";
+                // Set the modal body with the organization's detailed information
                 document.getElementById('modal-body').innerHTML = `
-                    <div class="row">
-                        <div class="row gx-3">
-                            <div class="col-lg-8  mb-3">
-                                <label class="form-label">Name</label>
-                                <input id="name" name="name" class="form-control" type="text" value="` + name + `"
-                                    readonly>
-                            </div>
-                            <div class="col-lg-4  mb-3">
-                                <label class="form-label">Type</label>
-                                <select id="type" class="form-select" name="type" id="contact" required disabled
-                                    value=` + type + `>
-                                    <option value="customer"> Customer </option>
-                                    <option value="service"> Service </option>
-                                </select>
-                            </div>
-                            <div class="col-lg-8  mb-3">
-                                <label class="form-label">Email</label>
-                                <input class="form-control" name="email" type="email" id="email" value="` + email + `"
-                                    readonly>
-                            </div>
-                            <div class="col-lg-4 mb-3">
-                                <input class="form-control" id="org_id" name="org_id" type="hidden" value=` + id + ` readonly>
-                            </div>
-                            <input id="old_org" name="old_org" class="form-control" type="hidden" value="` + name + `"
-                                readonly>`;
-
+                <div class="row">
+                    <div class="row gx-3">
+                        <div class="col-lg-8  mb-3">
+                            <label class="form-label">Name</label>
+                            <input id="name" name="name" class="form-control" type="text" value="` + name +
+                    `" readonly>
+                        </div>
+                        <div class="col-lg-4  mb-3">
+                            <label class="form-label">Type</label>
+                            <select id="type" class="form-select" name="type" id="contact" required disabled value=` +
+                    type + `>
+                                <option value="customer"> Customer </option>
+                                <option value="service"> Service </option>
+                            </select>
+                        </div>
+                        <div class="col-lg-8  mb-3">
+                            <label class="form-label">Email</label>
+                            <input class="form-control" name="email" type="email" id="email" value="` + email + `" readonly>
+                        </div>
+                        <div class="col-lg-4 mb-3">
+                            <input class="form-control" id="org_id" name="org_id" type="hidden" value=` + id + ` readonly>
+                        </div>
+                        <input id="old_org" name="old_org" class="form-control" type="hidden" value="` + name + `" readonly>
+                    </div>
+                </div>`;
             });
         }
 
+        // Function to enable editing of the organization's details
         function edit() {
             event.preventDefault();
+            // Remove the 'readonly' attribute from the name input field
             document.getElementById('name').removeAttribute('readonly');
-            document.getElementById('type').removeAttribute('disabled');
             document.getElementById('email').removeAttribute('readonly');
+
+            // Remove the 'disabled' attribute from the type select field
+            document.getElementById('type').removeAttribute('disabled');
+
+            // Enable the submit button
             document.getElementById('submit').disabled = false;
+            // Apply the 'btn btn-primary' CSS classes to the submit button (make it look pressable.)
             document.getElementById('submit').classList = 'btn btn-primary';
         }
     </script>

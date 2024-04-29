@@ -1,37 +1,54 @@
 {% extends 'layout.html' %}
+<!-- This template extends the 'layout.html' template, which likely contains the common structure and layout of the pages. -->
 
 {% block title %} Manage tech {% endblock %}
+<!-- This block sets the title of the page to "Manage tech". It overrides the 'title' block defined in the base template. -->
 
 {% block body %}
+<!-- This block defines the content of the page body. It overrides the 'body' block defined in the base template. -->
+
+<!-- Used for styling purposes, indicates a compact sidebar. -->
 
 <body class="aside-mini">
 
-    <b class="screen-overlay"></b>
+    <!-- Represents a sidebar navigation menu. Styling and functionality. -->
     <aside class="navbar-aside" id="offcanvas_aside">
+        <!-- This aside element represents a sidebar navigation menu. The 'navbar-aside' class and 'offcanvas_aside' ID are used for styling and functionality. -->
         <nav>
+            <!-- The sidebar menu items are defined as list items within this unordered list. -->
             <ul class="menu-aside">
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('tickets') }}"><i
-                            class="icon material-icons md-sticky_note_2"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'tickets' route. -->
+                    <a class="menu-link" href="{{ url_for('tickets') }}">
+                        <!-- This icon element represents the ticket screen. -->
+                        <i class="icon material-icons md-sticky_note_2"></i>
                         <span class="text">Tickets</span>
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'new' route. -->
+                    <a class="menu-link" href="{{ url_for('new') }}">
+                        <!-- This icon element represents the create new ticket screen (+) -->
+                        <i class="icon material-icons md-plus"></i>
                         <span class="text">Create new</span>
                     </a>
                 </li>
                 <hr>
+                <!-- This horizontal rule element creates a separator between menu items. -->
                 <li class="menu-item active">
-                    <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
-                            class="icon material-icons md-settings"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'admin_settings' route. -->
+                    <a class="menu-link" href="{{ url_for('admin_settings') }}">
+                        <!-- This icon element represents settings. -->
+                        <i class="icon material-icons md-settings"></i>
                         <span class="text">Settings</span>
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('logout') }}"><i
-                            class="icon material-icons text-danger md-log_out"></i>
-                        <span class="text">Settings</span>
+                    <!-- The 'url_for' function is used to generate a URL for the 'logout' route. -->
+                    <a class="menu-link" href="{{ url_for('logout') }}">
+                        <!-- This icon element is red, representing logout. -->
+                        <i class="icon material-icons text-danger md-log_out"></i>
+                        <span class="text">Log out</span>
                     </a>
                 </li>
                 <br>
@@ -39,34 +56,53 @@
         </nav>
     </aside>
     <main class="main-wrap">
+        <!-- This main element represents the main area of the page. -->
         <section class="content-main">
+            <!-- This section element represents the main content section within the main area. (Border with edge of screen, etc. Mostly for styling.) -->
             <div class="content-header">
-                <h2 class="content-title">Manage users</h2>
+                <!-- Title of the main content section. -->
+                <h2 class="content-title">Manage Organizations</h2>
             </div>
 
+            <!-- This div element represents a card component. -->
             <div class="card">
+                <!-- This div element represents the body of the card component. -->
                 <div class="card-body">
+                    <!-- This div element represents a row with a gutter size of 5 (using a grid CSS system). -->
                     <div class="row gx-5">
+                        <!-- This aside element represents a sidebar within the card, occupying 3 columns on large screens. The 'border-end' class adds a border to the right side. -->
                         <aside class="col-lg-3 border-end">
+                            <!-- This nav element represents a navigation menu within the sidebar, displayed as vertical pills on large screens with a bottom margin of 4. -->
                             <nav class="nav nav-pills flex-lg-column mb-4">
+                                <!-- This link represents a navigation item for the user's profile. -->
                                 <a class="nav-link" aria-current="page" href="{{ url_for('admin_settings') }}">Your
                                     Profile</a>
+                                <!-- This link represents the currently active navigation item for managing organizations. -->
                                 <a class="nav-link" href="{{ url_for('manage_organizations') }}">Manage
                                     Organizations</a>
-                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add
-                                    Organization</a>
+                                <!-- This link represents a navigation item for adding a new organization. -->
+                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add Organization</a>
+                                <!-- This link represents a navigation item for managing users. -->
                                 <a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a>
-                                <a class="nav-link" href="{{ url_for('add_user') }}">Add
-                                    Users</a>
+                                <!-- This link represents a navigation item for adding new users. -->
+                                <a class="nav-link" href="{{ url_for('add_user') }}">Add Users</a>
+                                <!-- This link represents a navigation item for managing tech-related entities. -->
                                 <a class="nav-link active" href="{{ url_for('manage_tech') }}">Manage Tech</a>
+                                <!-- This link represents a navigation item for adding new tech-related entities. -->
                                 <a class="nav-link" href="{{ url_for('add_tech') }}">Add Tech</a>
                             </nav>
                         </aside>
+                        <!-- This div element represents the main content area within the card, occupying 9 columns on large screens. -->
                         <div class="col-lg-9">
+                            <!-- This section element represents the body of the main content area with extra-large padding of 4. -->
                             <section class="content-body p-xl-4">
+                                <!-- This div element makes the table responsive and adds horizontal scrolling if needed. -->
                                 <div class="table-responsive" style="overflow-x: auto;">
+                                    <!-- This table element represents a table with hoverable rows. -->
                                     <table class="table table-hover">
+                                        <!-- This thead element represents the table header. -->
                                         <thead>
+                                            <!-- Displays the prganization details shown to user at a glance -->
                                             <tr>
                                                 <th>#ID</th>
                                                 <th scope="col">Name</th>
@@ -76,31 +112,44 @@
                                                 <th scope="col" class="text-end">Actions</th>
                                             </tr>
                                         </thead>
+                                        <!-- This tbody element represents the table body where the dynamic content will be inserted using JavaScript. -->
                                         <tbody id="table-content">
                                         </tbody>
                                     </table>
+                                    <!-- This link represents a button to go back to the top of the page. -->
                                     <a href="#" class="btn btn-light">Back to top</a>
                                 </div>
                             </section>
                         </div>
+
                         <!-- Modal -->
+                        <!-- Appears when user clicks on More -->
+                        <!-- This div element represents a modal component that is initially hidden. -->
                         <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel"
                             aria-hidden="true">
+                            <!-- This div element represents the modal dialog, which is centered and has a large size. -->
                             <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <!-- This div element represents the content of the modal. -->
                                 <div class="modal-content">
-                                    <form action="{{ url_for('manage_tech') }}" , method="POST">
+                                    <!-- This form element submits data to the 'manage_tech' route using the POST method. -->
+                                    <!-- If a form is sent, it means that the user has requested an update to a tech user -->
+                                    <form action="{{ url_for('manage_tech') }}" method="POST">
+                                        <!-- This div element represents the header of the modal. -->
                                         <div class="modal-header">
+                                            <!-- This heading represents the title of the modal, which will be dynamically populated using JavaScript. -->
                                             <h1 class="modal-title fs-5" id="modalLabel"></h1>
+                                            <!-- This button element is used to close the modal. -->
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                 aria-label="Close"></button>
                                         </div>
+                                        <!-- This div element represents the body of the modal, which will be dynamically populated using JavaScript. -->
                                         <div class="modal-body" id="modal-body">
-
                                         </div>
+                                        <!-- This div element represents the footer of the modal. -->
                                         <div class="modal-footer">
-                                            <!-- <button type="button" class="btn btn-outline-danger">Delete
-                                                organization</button> -->
+                                            <!-- This button element is used to enable editing of the modal content when clicked. -->
                                             <button type="button" onclick="edit();" class="btn btn-light">Edit</button>
+                                            <!-- This button element is used to submit the form and save the changes, initially disabled. -->
                                             <button type="submit" id="submit" class="btn btn-primary" disabled>Save
                                                 changes</button>
                                         </div>
@@ -112,104 +161,130 @@
                 </div>
             </div>
     </main>
+
     <script>
+        // Get the table element with the ID 'table-content'
         let table = document.getElementById('table-content');
+        // Call the render_table() function to populate the table with data
         render_table();
 
+        // Function to render the table with user data
         function render_table() {
+            // Clear the existing table content
             table.innerHTML = '';
+            // Make an AJAX GET request to fetch the user data
             $.get('{{ url_for("get_techs") }}', function (data) {
                 let users = JSON.parse(data);
+                // Get the number of users
                 let num_entires = Object.keys(users).length;
                 to_display = num_entires;
+                // Iterate over the users and generate table rows
                 for (let i = 0; i < to_display; ++i) {
                     let user = users[i];
+                    // Extract the user's ID, name, email, password, and organization
                     let id = user['id'];
                     let name = user['name'];
                     let email = user['email'];
                     let password = user['password'];
                     let org = user['organization'];
 
-                    table.innerHTML += ` <tr>
-            <td>` + id + `</td>
-            <td>` + name + `</td>
-            <td>` + email + `</td>
-            <td>` + org + `</td>
-            <td><span class="spoiler">` + password + `</span></td>
-            <td class="text-end">
-                <button data-bs-toggle="modal" data-bs-target="#modal" id="` + id + `" onclick="display(this.id);" class="btn btn-light">More</button>
-            </td>
-            </tr>`;
+                    // Generate the table row HTML with the user's data
+                    table.innerHTML += `
+                    <tr>
+                        <td>` + id + `</td>
+                        <td>` + name + `</td>
+                        <td>` + email + `</td>
+                        <td>` + org + `</td>
+                        <td><span class="spoiler">` + password + `</span></td>
+                        <td class="text-end">
+                            <button data-bs-toggle="modal" data-bs-target="#modal" id="` + id + `" onclick="display(this.id);" class="btn btn-light">More</button>
+                        </td>
+                    </tr>`;
                 }
             });
         }
 
+        // Function to render the organization options in the select field
         function render_orgs(val) {
+            // Make an AJAX GET request to fetch the organization data
             $.get('{{ url_for("get_orgs") }}', function (data) {
                 let form = document.getElementById('org');
                 let orgs = data;
+                // Get the number of organizations
                 let num_entires = Object.keys(orgs).length;
                 to_display = num_entires;
+                // Iterate over the organizations and add options to the select field
                 for (let i = 0; i < to_display; ++i) {
                     let org = orgs[i];
                     let newOption = new Option(org['name'], org['name'])
                     form.add(newOption, undefined);
                 }
+                // Set the selected value of the select field
                 form.value = val;
             });
         }
 
+        // Function to display the modal with detailed user information
         function display(id) {
+            // Make an AJAX GET request to fetch the detailed user data
             $.get('{{ url_for("get_user") }}' + '?uid=' + id, function (data) {
                 let users = JSON.parse(data);
                 let user = users[0];
                 console.log(user);
+                // Extract the user's ID, name, email, password, and organization
                 let uid = user['id'];
                 let name = user['name'];
                 let email = user['email'];
                 let password = user['password'];
                 let org = user['organization'];
+                // Set the modal title with the user's name and ID
                 document.getElementById('modalLabel').innerHTML = name + " (#" + uid + ")";
+                // Set the modal body with the user's detailed information
                 document.getElementById('modal-body').innerHTML = `
-                    <div class="row">
-                        <div class="row gx-3">
-                            <div class="col-lg-6  mb-3">
-                                <label class="form-label">Name</label>
-                                <input id="name" name="name" class="form-control" type="text" value="` + name + `"
-                                    readonly>
-                            </div>
-                            <div class="col-lg-6  mb-3">
-                                <label class="form-label">Email</label>
-                                <input class="form-control" name="email" type="email" id="email" value="` + email + `"
-                                    readonly>
-                            </div>
-                            <div class="col-lg-6  mb-3">
-                                <label class="form-label">Password</label>
-                                <input class="form-control" name="password" type="text"
-                                    id="password" value="` + password + `" readonly>
-                            </div>
-                            <div class="col-lg-6 mb-3">
-                                <label class="form-label">Organization</label>
-                                <select id="org" class="form-select" name="org" id="contact" required disabled>
-                                </select>
-                            </div>
-                            <div class="col-lg-6 mb-3">
-                                <input class="form-control" id="uid" name="uid" type="hidden" value=` + uid + ` readonly>
-                            </div>
+                <div class="row">
+                    <div class="row gx-3">
+                        <div class="col-lg-6  mb-3">
+                            <label class="form-label">Name</label>
+                            <input id="name" name="name" class="form-control" type="text" value="` + name + `" readonly>
                         </div>
-                    </div>`;
+                        <div class="col-lg-6  mb-3">
+                            <label class="form-label">Email</label>
+                            <input class="form-control" name="email" type="email" id="email" value="` + email + `" readonly>
+                        </div>
+                        <div class="col-lg-6  mb-3">
+                            <label class="form-label">Password</label>
+                            <input class="form-control" name="password" type="text" id="password" value="` +
+                    password + `" readonly>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label">Organization</label>
+                            <select id="org" class="form-select" name="org" id="contact" required disabled>
+                            </select>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <input class="form-control" id="uid" name="uid" type="hidden" value=` + uid + ` readonly>
+                        </div>
+                    </div>
+                </div>`;
+                // Call the render_orgs() function to populate the organization select field
                 render_orgs(org);
             });
         }
 
+        // Function to enable editing of the user's details
         function edit() {
             event.preventDefault();
+            // Remove the 'readonly' attribute from the name input field
             document.getElementById('name').removeAttribute('readonly');
             document.getElementById('password').removeAttribute('readonly');
             document.getElementById('email').removeAttribute('readonly');
+
+            // Remove the 'disabled' attribute from the organization select field
             document.getElementById('org').removeAttribute('disabled');
 
+            // Enable the submit button
             document.getElementById('submit').disabled = false;
+            // Apply the 'btn btn-primary' CSS classes to the submit button (make it look pressable.)
             document.getElementById('submit').classList = 'btn btn-primary';
         }
     </script>
