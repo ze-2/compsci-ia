@@ -1,37 +1,58 @@
 {% extends 'layout.html' %}
+<!--  This is a Jinja2 directive that uses inheritance in HTML to inherit code from the file layout.html, which is a barebones page. -->
+<!--  This way, we don't have to write any header comments or any fundamental HTML syntax, and we can get straight to writing code. It's very useful as HTML is a very repetitive language sometimes, and it saves space, reduces complexity and could potential reduce maintainence overhead. -->
 
 {% block title %} Admin settings {% endblock %}
+<!--  block title is defined in layout.html, and its a form of polymorphism. It overrides the content of the title block in layout.html but keeps the HTML formatting. -->
 
 {% block body %}
+<!--  The same applies here. The content of this body block will override anything from layout.html but will keep any non-overridden features. -->
+
+
+<!-- This page is for providing tech roles with a way to change the settings of their account. -->
+<!-- They can change their password, their email, their name and their organization. -->
+
+<!-- Used for styling purposes, indicates a compact sidebar. -->
 
 <body class="aside-mini">
-
-    <b class="screen-overlay"></b>
+    <!-- Represents a sidebar navigation menu. -->
     <aside class="navbar-aside" id="offcanvas_aside">
+        <!-- This aside element represents a sidebar navigation menu. The 'navbar-aside' class and 'offcanvas_aside' ID are used for styling and functionality. -->
         <nav>
+            <!-- The sidebar menu items are defined as list items within this unordered list. -->
             <ul class="menu-aside">
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('tickets') }}"><i
-                            class="icon material-icons md-sticky_note_2"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'tickets' route. -->
+                    <a class="menu-link" href="{{ url_for('tickets') }}">
+                        <!-- This icon element represents the ticket screen. -->
+                        <i class="icon material-icons md-sticky_note_2"></i>
                         <span class="text">Tickets</span>
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'new' route. -->
+                    <a class="menu-link" href="{{ url_for('new') }}">
+                        <!-- This icon element represents the create new ticket screen (+) -->
+                        <i class="icon material-icons md-plus"></i>
                         <span class="text">Create new</span>
                     </a>
                 </li>
                 <hr>
+                <!-- This horizontal rule element creates a separator between menu items. -->
                 <li class="menu-item active">
-                    <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
-                            class="icon material-icons md-settings"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'admin_settings' route. -->
+                    <a class="menu-link" href="{{ url_for('admin_settings') }}">
+                        <!-- This icon element represents settings. -->
+                        <i class="icon material-icons md-settings"></i>
                         <span class="text">Settings</span>
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('logout') }}"><i
-                            class="icon material-icons text-danger md-log_out"></i>
-                        <span class="text">Settings</span>
+                    <!-- The 'url_for' function is used to generate a URL for the 'logout' route. -->
+                    <a class="menu-link" href="{{ url_for('logout') }}">
+                        <!-- This icon element is red, representing logout. -->
+                        <i class="icon material-icons text-danger md-log_out"></i>
+                        <span class="text">Log out</span>
                     </a>
                 </li>
                 <br>
@@ -39,87 +60,98 @@
         </nav>
     </aside>
     <main class="main-wrap">
+        <!-- This main element represents the main area of the page. -->
         <section class="content-main">
+            <!-- This section element represents the main content section within the main area. (Border with edge of screen, etc. Mostly for styling.) -->
             <div class="content-header">
-                <h2 class="content-title">Settings</h2>
+                <!-- Title of the main content section. -->
+                <h2 class="content-title">Your profile</h2>
             </div>
+
+            <!-- This div element represents a card component. -->
             <div class="card">
+                <!-- This div element represents the body of the card component. -->
                 <div class="card-body">
+                    <!-- This div element represents a row with a gutter size of 5 (using a grid CSS system). -->
                     <div class="row gx-5">
+                        <!-- This aside element represents a sidebar within the card, occupying 3 columns on large screens. The 'border-end' class adds a border to the right side. -->
                         <aside class="col-lg-3 border-end">
+                            <!-- This nav element represents a navigation menu within the sidebar, displayed as vertical pills on large screens with a bottom margin of 4. -->
                             <nav class="nav nav-pills flex-lg-column mb-4">
+                                <!-- This link represents a navigation item for the user's profile. -->
                                 <a class="nav-link active" aria-current="page"
                                     href="{{ url_for('admin_settings') }}">Your
                                     Profile</a>
+                                <!-- This link represents the currently active navigation item for managing organizations. -->
                                 <a class="nav-link" href="{{ url_for('manage_organizations') }}">Manage
                                     Organizations</a>
-                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add
-                                    Organization</a>
+                                <!-- This link represents a navigation item for adding a new organization. -->
+                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add Organization</a>
+                                <!-- This link represents a navigation item for managing users. -->
                                 <a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a>
-                                <a class="nav-link" href="{{ url_for('add_user') }}">Add
-                                    Users</a>
+                                <!-- This link represents a navigation item for adding new users. -->
+                                <a class="nav-link" href="{{ url_for('add_user') }}">Add Users</a>
                             </nav>
                         </aside>
+                        <!-- This div element represents the main content area within the card, occupying 9 columns on large screens. -->
                         <div class="col-lg-9">
+                            <!-- This section element represents the body of the main content area with an extra-large padding of 4. -->
                             <section class="content-body p-xl-4">
-                                <form action="/admin_settings" , method="POST">
+                                <!-- This form element submits data to the '/admin_settings' route using the POST method. (only happens when form is submitted) -->
+                                <form action="/admin_settings" method="POST">
                                     <div class="row">
                                         <div class="row gx-3">
                                             <div class="col-6  mb-3">
+                                                <!-- This input element represents a read-only text field for the user's name. The value is populated using the Jinja2 syntax '{{ name }}'. -->
                                                 <label class="form-label">Name</label>
                                                 <input id="name" name="name" class="form-control" type="text"
                                                     value="{{ name }}" readonly>
                                             </div>
                                             <div class="col-lg-6  mb-3">
+                                                <!-- This input element represents a read-only email field for the user's email. The value is populated using the Jinja2 syntax '{{ email }}'. -->
                                                 <label class="form-label">Email</label>
                                                 <input class="form-control" name="email" type="email" id="email"
                                                     value="{{ email }}" readonly>
                                             </div>
                                             <div class="col-lg-8  mb-3">
+                                                <!-- This input element represents a read-only text field for the user's organization. The value is populated using the Jinja2 syntax '{{ org }}'. -->
                                                 <label name="org" class="form-label">Organization</label>
                                                 <input class="form-control" id="org" type="text" name="org"
                                                     value="{{ org }}" readonly>
                                             </div>
                                             <div class="col-lg-4 mb-3">
+                                                <!-- This input element represents a disabled text field indicating the user's account type as "Tech". -->
                                                 <label class="form-label">Account type</label>
                                                 <input class="form-control" id="org" type="text" value="Tech" disabled>
                                             </div>
                                 </form>
                                 <div class="col-lg-6 mt-3 mb-3">
+                                    <!-- This button element triggers the 'edit()' function when clicked, which enables editing of the profile fields. -->
                                     <button class="btn btn-light me-3" onclick="edit()">Edit
                                         profile</button>
+                                    <!-- This button element is initially disabled and is used to submit the form and save the changes. -->
                                     <button class="btn btn-primary disabled" type="submit" id="submit" disabled>Save
                                         changes</button>
                                 </div>
                         </div>
                     </div>
-                    <br>
-                    <hr class="my-5">
-                    <div class="row" style="max-width:920px">
-                        <div class="col-md">
-                            <!-- TODO password changing -->
-                            <article class="box mb-3 bg-light">
-                                <a class="btn float-end btn-light btn-sm" href="#">Change</a>
-                                <h6>Password</h6>
-                                <small class="text-muted d-block" style="width:70%">You can reset or change
-                                    your
-                                    password by clicking here</small>
-                            </article>
-                        </div>
-                    </div>
         </section>
     </main>
+
     <script>
         function edit() {
+            // Prevent the default form submission behavior
             event.preventDefault();
+
+            // Remove the 'readonly' attribute from the organization, name, and email fields, allowing them to be edited
             document.getElementById('org').removeAttribute('readonly');
             document.getElementById('name').removeAttribute('readonly');
             document.getElementById('email').removeAttribute('readonly');
+
+            // Enable the submit button and set its CSS class to 'btn btn-primary' so show that it's not cliclable
             document.getElementById('submit').disabled = false;
             document.getElementById('submit').classList = 'btn btn-primary';
-
         }
-        let editing = false;
     </script>
 </body>
 {% endblock %}

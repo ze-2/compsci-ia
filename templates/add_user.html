@@ -1,37 +1,53 @@
+<!-- This template extends the 'layout.html' template, which contains the common structure and layout of the pages. -->
 {% extends 'layout.html' %}
 
+<!-- This block sets the title of the page to "Create user". It overrides the 'title' block defined in the base template. -->
 {% block title %} Create user {% endblock %}
 
+<!-- This block defines the content of the page body. It overrides the 'body' block defined in the base template. -->
 {% block body %}
 
-<body class="aside-mini">
+<!-- Used for styling purposes, indicates a compact sidebar. -->
 
-    <b class="screen-overlay"></b>
+<body class="aside-mini">
+    <!-- Represents a sidebar navigation menu. -->
     <aside class="navbar-aside" id="offcanvas_aside">
+        <!-- This aside element represents a sidebar navigation menu. The 'navbar-aside' class and 'offcanvas_aside' ID are used for styling and functionality. -->
         <nav>
+            <!-- The sidebar menu items are defined as list items within this unordered list. -->
             <ul class="menu-aside">
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('tickets') }}"><i
-                            class="icon material-icons md-sticky_note_2"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'tickets' route. -->
+                    <a class="menu-link" href="{{ url_for('tickets') }}">
+                        <!-- This icon element represents the ticket screen. -->
+                        <i class="icon material-icons md-sticky_note_2"></i>
                         <span class="text">Tickets</span>
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'new' route. -->
+                    <a class="menu-link" href="{{ url_for('new') }}">
+                        <!-- This icon element represents the create new ticket screen (+) -->
+                        <i class="icon material-icons md-plus"></i>
                         <span class="text">Create new</span>
                     </a>
                 </li>
                 <hr>
+                <!-- This horizontal rule element creates a separator between menu items. -->
                 <li class="menu-item active">
-                    <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
-                            class="icon material-icons md-settings"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'admin_settings' route. -->
+                    <a class="menu-link" href="{{ url_for('admin_settings') }}">
+                        <!-- This icon element represents settings. -->
+                        <i class="icon material-icons md-settings"></i>
                         <span class="text">Settings</span>
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('logout') }}"><i
-                            class="icon material-icons text-danger md-log_out"></i>
-                        <span class="text">Settings</span>
+                    <!-- The 'url_for' function is used to generate a URL for the 'logout' route. -->
+                    <a class="menu-link" href="{{ url_for('logout') }}">
+                        <!-- This icon element is red, representing logout. -->
+                        <i class="icon material-icons text-danger md-log_out"></i>
+                        <span class="text">Log out</span>
                     </a>
                 </li>
                 <br>
@@ -39,56 +55,81 @@
         </nav>
     </aside>
     <main class="main-wrap">
+        <!-- This main element represents the main area of the page. -->
         <section class="content-main">
+            <!-- This section element represents the main content section within the main area. (Border with edge of screen, etc. Mostly for styling.) -->
             <div class="content-header">
+                <!-- Title of the main content section. -->
                 <h2 class="content-title">Add users</h2>
             </div>
 
+            <!-- This div element represents a card component. -->
             <div class="card">
+                <!-- This div element represents the body of the card component. -->
                 <div class="card-body">
+                    <!-- This div element represents a row with a gutter size of 5 (using a grid CSS system). -->
                     <div class="row gx-5">
+                        <!-- This aside element represents a sidebar within the card, occupying 3 columns on large screens. The 'border-end' class adds a border to the right side. -->
                         <aside class="col-lg-3 border-end">
+                            <!-- This nav element represents a navigation menu within the sidebar, displayed as vertical pills on large screens with a bottom margin of 4. -->
                             <nav class="nav nav-pills flex-lg-column mb-4">
+                                <!-- This link represents a navigation item for the user's profile. -->
                                 <a class="nav-link" aria-current="page" href="{{ url_for('admin_settings') }}">Your
                                     Profile</a>
+                                <!-- This link represents the currently active navigation item for managing organizations. -->
                                 <a class="nav-link" href="{{ url_for('manage_organizations') }}">Manage
                                     Organizations</a>
-                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add
-                                    Organization</a>
+                                <!-- This link represents a navigation item for adding a new organization. -->
+                                <a class="nav-link" href="{{ url_for('add_organization') }}">Add Organization</a>
+                                <!-- This link represents a navigation item for managing users. -->
                                 <a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a>
-                                <a class="nav-link active" href="{{ url_for('add_user') }}">Add
-                                    Users</a>
+                                <!-- This link represents a navigation item for adding new users. -->
+                                <a class="nav-link active" href="{{ url_for('add_user') }}">Add Users</a>
+                                <!-- This link represents a navigation item for managing tech-related entities. -->
                                 <a class="nav-link" href="{{ url_for('manage_tech') }}">Manage Tech</a>
-                                <a class="nav-link" href="{{ url_for('add_tech') }}">Add
-                                    Tech</a>
+                                <!-- This link represents a navigation item for adding new tech-related entities. -->
+                                <a class="nav-link" href="{{ url_for('add_tech') }}">Add Tech</a>
                             </nav>
                         </aside>
+                        <!-- This div element represents the main content area within the card, occupying 9 columns on large screens. -->
                         <div class="col-lg-9">
+                            <!-- This section element represents the body of the main content area with an extra-large padding of 4. -->
                             <section class="content-body p-xl-4">
-                                <form action="/add_user" , method="POST">
+                                <!-- This form element submits data to the '/add_user' route using the POST method. POST request only sent when user submits the form (adds a new user)-->
+                                <form action="/add_user" method="POST">
+                                    <!-- This section element represents the main content section within the form. -->
                                     <section class="content-main">
+                                        <!-- This div element represents the header of the main content section within the form. -->
                                         <div class="content-header">
+                                            <!-- This heading represents the title of the main content section within the form. -->
                                             <h2 class="content-title">Create new user</h2>
+                                            <!-- This button element submits the form when clicked. It has the classes 'btn' and 'btn-primary' for styling. -->
                                             <button type="submit" class="btn btn-primary">Create user</button>
                                         </div>
+                                        <!-- This div element represents a card component with a bottom margin of 4. -->
                                         <div class="card mb-4">
+                                            <!-- This div element represents the body of the card component within the form. -->
                                             <div class="card-body">
                                                 <div class="mb-4">
+                                                    <!-- This input element represents a text field for the user's name. It has various attributes for placeholder text, ID, name, CSS class, and required validation. -->
                                                     <label class="form-label">Name</label>
                                                     <input type="text" placeholder="Name of user" id="name" name="name"
-                                                        class="form-control" required></input>
+                                                        class="form-control" required>
                                                 </div>
                                                 <div class="mb-4">
+                                                    <!-- This input element represents an email field for the user's email. It has various attributes for placeholder text, ID, type, CSS class, name, and required validation. -->
                                                     <label class="form-label">Email</label>
                                                     <input placeholder="Email of user" id="email" type="email"
-                                                        class="form-control" name="email" required></input>
+                                                        class="form-control" name="email" required>
                                                 </div>
                                                 <div class="mb-4">
+                                                    <!-- This input element represents a text field for the user's password. It has various attributes for placeholder text, ID, type, CSS class, name, and required validation. -->
                                                     <label class="form-label">Password</label>
                                                     <input placeholder="Password" id="password" type="text"
-                                                        class="form-control" name="password" required></input>
+                                                        class="form-control" name="password" required>
                                                 </div>
                                                 <div>
+                                                    <!-- This select element represents a dropdown for selecting the user's organization. It has attributes for name, ID, and required validation. The options will be dynamically populated using JavaScript. -->
                                                     <label for="status" class="form-label">Organization</label>
                                                     <select class="form-select" name="org" id="org" required>
                                                     </select>
@@ -102,35 +143,38 @@
             </div>
         </section>
     </main>
+
     <script>
         // Use jQuery to make an HTTP request for the list of organizations
         $.get('{{ url_for("get_orgs") }}', function (data) {
-            // Create an array to store the organization names
-            let names = []
-            // Clear the existing list of organizations
+            // Make an AJAX GET request to the 'get_orgs' endpoint
+            // The URL is generated using the Jinja2 url_for() function
+
+            // Store the data returned from the request in the 'orgs' variable
+            let names = [];
             $('org').empty();
-            // Store the data returned from the request
             let orgs = data;
-            // Get the number of organizations
+
+            // Get the number of entries in the 'orgs' object
             let num_entires = Object.keys(orgs).length;
-            // Loop through the organizations
+
+            // Loop through each entry in the 'orgs' object
             for (let i = 0; i < num_entires; ++i) {
-                let org = orgs[i];
-                console.log(org);
+
                 // Get the organization name
-                let name = org['name'];
+                let org = orgs[i];
                 // Add the name to the names array
+                let name = org['name'];
+                // Extract the 'name' property from each organization object and store it in the 'names' array
                 names.push(name);
             }
-            // Create an empty string to store the HTML options
-            var str = ""
-            // Loop through the names array and create the HTML options
+
+            // Generate the HTML options for the organization dropdown based on the 'names' array
+            var str = "";
             for (var org of names) {
-                str += "<option>" + org + "</option>"
+                str += "<option>" + org + "</option>";
             }
-            // Log the created string
-            console.log(str);
-            // Set the innerHTML of the organization list to the created string
+            // Set the generated HTML options as the inner HTML of the 'org' select element
             document.getElementById("org").innerHTML = str;
         });
     </script>

@@ -1,36 +1,54 @@
 {% extends 'layout.html' %}
+<!-- This template extends the 'layout.html' template, which contains the common structure and layout of the pages. -->
 
-{% block title %} New ticket {% endblock %}
+{% block title %} Manage tech {% endblock %}
+<!-- This block sets the title of the page to "Manage tech". It overrides the 'title' block defined in the base template. -->
 
 {% block body %}
+<!-- This block defines the content of the page body. It overrides the 'body' block defined in the base template. -->
+
+<!-- Used for styling purposes, indicates a compact sidebar. -->
 
 <body class="aside-mini">
-    <b class="screen-overlay"></b>
+
+    <!-- Represents a sidebar navigation menu. -->
     <aside class="navbar-aside" id="offcanvas_aside">
+        <!-- This aside element represents a sidebar navigation menu. The 'navbar-aside' class and 'offcanvas_aside' ID are used for styling and functionality. -->
         <nav>
+            <!-- The sidebar menu items are defined as list items within this unordered list. -->
             <ul class="menu-aside">
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('tickets') }}"><i
-                            class="icon material-icons md-sticky_note_2"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'tickets' route. -->
+                    <a class="menu-link" href="{{ url_for('tickets') }}">
+                        <!-- This icon element represents the ticket screen. -->
+                        <i class="icon material-icons md-sticky_note_2"></i>
                         <span class="text">Tickets</span>
                     </a>
                 </li>
                 <li class="menu-item active">
-                    <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'new' route. -->
+                    <a class="menu-link" href="{{ url_for('new') }}">
+                        <!-- This icon element represents the create new ticket screen (+) -->
+                        <i class="icon material-icons md-plus"></i>
                         <span class="text">Create new</span>
                     </a>
                 </li>
                 <hr>
+                <!-- This horizontal rule element creates a separator between menu items. -->
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
-                            class="icon material-icons md-settings"></i>
+                    <!-- The 'url_for' function is used to generate a URL for the 'admin_settings' route. -->
+                    <a class="menu-link" href="{{ url_for('admin_settings') }}">
+                        <!-- This icon element represents settings. -->
+                        <i class="icon material-icons md-settings"></i>
                         <span class="text">Settings</span>
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a class="menu-link" href="{{ url_for('logout') }}"><i
-                            class="icon material-icons text-danger md-log_out"></i>
-                        <span class="text">Settings</span>
+                    <!-- The 'url_for' function is used to generate a URL for the 'logout' route. -->
+                    <a class="menu-link" href="{{ url_for('logout') }}">
+                        <!-- This icon element is red, representing logout. -->
+                        <i class="icon material-icons text-danger md-log_out"></i>
+                        <span class="text">Log out</span>
                     </a>
                 </li>
                 <br>
@@ -38,40 +56,57 @@
         </nav>
     </aside>
 
+    <!-- This main element represents the main area of the page. -->
     <main class="main-wrap">
-        <form action="/new" , method="POST">
+        <!-- This form element submits data to the '/new' route using the POST method. POST method sent when user submits form -->
+        <form action="/new" method="POST">
+            <!-- This section element represents the main content section within the main area.-->
             <section class="content-main">
+                <!-- This div element represents the header of the main content section. -->
                 <div class="content-header">
+                    <!-- This heading represents the title of the main content section. -->
                     <h2 class="content-title">Create new ticket</h2>
+                    <!-- This button element submits the form when clicked. -->
                     <button type="submit" class="btn btn-primary">Submit ticket</button>
                 </div>
+                <!-- This div element represents a card component with a bottom margin of 4. -->
                 <div class="card mb-4">
+                    <!-- This div element represents the body of the card component. -->
                     <div class="card-body">
+                        <!-- This div element represents a row with a gutter size of 2 (likely using a grid system). -->
                         <div class="row gx-2">
+                            <!-- This div element represents a column with a width of 6 on small screens. -->
                             <div class="col-sm-6">
                                 <div class="mb-4">
+                                    <!-- This input element represents a text field for the ticket title. It has various attributes for placeholder text, ID, name, CSS class, maximum length, and required validation. -->
                                     <label class="form-label">Title</label>
                                     <input type="text" placeholder="Title.." id="title" name="title"
-                                        class="form-control" maxlength="40" rows="4" required></input>
+                                        class="form-control" maxlength="40" rows="4" required>
                                 </div>
                             </div>
+                            <!-- This div element represents a column with a width of 6 on small screens. -->
                             <div class="col-sm-6">
-                                <label for="date" class="form-label">Date created
-                                    (mm/dd/yyyy)</label><br>
+                                <!-- This input element represents a datetime-local field for the ticket creation date. It has attributes for name, ID, required validation, and CSS class. -->
+                                <label for="date" class="form-label">Date created (mm/dd/yyyy)</label><br>
                                 <input type="datetime-local" name="date" id="date" required class="date">
                             </div>
                         </div>
 
+                        <!-- This div element represents a row with a gutter size of 2 (likely using a grid system). -->
                         <div class="row gx-2">
+                            <!-- This div element represents a column with a width of 6 on small screens. -->
                             <div class="col-sm-6">
                                 <div class="mb-4">
+                                    <!-- This select element represents a dropdown for selecting the ticket creator. It has attributes for name, ID, and required validation. The options will be dynamically populated using JavaScript. -->
                                     <label for="creator" class="form-label">Creator</label>
                                     <select class="form-select" name="creator" id="creator" required>
                                     </select>
                                 </div>
                             </div>
+                            <!-- This div element represents a column with a width of 6 on small screens. -->
                             <div class="col-sm-6">
                                 <div class="mb-4">
+                                    <!-- This select element represents a dropdown for selecting the organization. It has attributes for name, ID, and required validation. The options will be dynamically populated using JavaScript. -->
                                     <label for="org" class="form-label">Organization</label>
                                     <select class="form-select" name="org" id="org" required>
                                     </select>
@@ -79,13 +114,17 @@
                             </div>
                         </div>
                         <div class="mb-4">
+                            <!-- This textarea element represents a multi-line text field for the ticket description. It has various attributes for placeholder text, ID, CSS class, number of rows, name, and required validation. -->
                             <label class="form-label">Description</label>
                             <textarea placeholder="Description.." id="desc" class="form-control" rows="4" name="desc"
                                 required></textarea>
                         </div>
+                        <!-- This div element represents a row with a gutter size of 2 (using CSS grid system). -->
                         <div class="row gx-2">
+                            <!-- This div element represents a column with a width of 6 on small screens. -->
                             <div class="col-sm-6">
                                 <div class="mb-2">
+                                    <!-- This select element represents a dropdown for selecting the ticket priority. It has attributes for name, ID, and required validation. -->
                                     <label for="priority" class="form-label">Priority</label>
                                     <select class="form-select" name="priority" id="priority" required>
                                         <option value="High">High</option>
@@ -95,8 +134,10 @@
                                 </div>
                             </div>
 
+                            <!-- This div element represents a column with a width of 6 on small screens. -->
                             <div class="col-sm-6">
                                 <div class="mb-2">
+                                    <!-- This select element represents a dropdown for selecting the ticket status. It has attributes for name, ID, and required validation. -->
                                     <label for="status" class="form-label">Status</label>
                                     <select class="form-select" name="status" id="status" required>
                                         <option value="Open">Open</option>
@@ -110,44 +151,57 @@
             </section>
         </form>
     </main>
+
     <script>
+        // Set the default value of the date input field to the current date and time
         let today = new Date();
         today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
         document.getElementById('date').value = today.toISOString().slice(0, 16);
 
+        // Make an AJAX GET request to the 'get_orgs' endpoint
+        // The URL is generated using the Jinja2 url_for() function
         $.get('{{ url_for("get_orgs") }}', function (data) {
-            let names = []
+            let names = [];
             $('org').empty();
             let orgs = data;
+            // Get the number of organizations
             let num_entires = Object.keys(orgs).length;
+            // Loop through each organization and extract its name
             for (let i = 0; i < num_entires; ++i) {
                 let org = orgs[i];
                 console.log(org);
                 let name = org['name'];
                 names.push(name);
             }
-            var str = ""
+            // Generate the HTML options for the organization dropdown
+            var str = "";
             for (var org of names) {
-                str += "<option>" + org + "</option>"
+                str += "<option>" + org + "</option>";
             }
-            console.log(str);
+            // Set the input form (org) with the list of organizations
             document.getElementById("org").innerHTML = str;
         });
 
+        // Make an AJAX GET request to the 'get_all' endpoint
+        // The URL is generated using the Jinja2 url_for() function
         $.get('{{ url_for("get_all") }}', function (data) {
-            let names = []
+            let names = [];
             $('creator').empty();
             let users = JSON.parse(data);
+            // Get the number of users
             let num_entires = Object.keys(users).length;
+            // Loop through each user and extract their name
             for (let i = 0; i < num_entires; ++i) {
                 let user = users[i];
                 let name = user['name'];
                 names.push(name);
             }
-            var str = ""
+            // Generate the HTML options for the creator dropdown
+            var str = "";
             for (var user of names) {
-                str += "<option value=" + user + ">" + user + "</option>"
+                str += "<option value=" + user + ">" + user + "</option>";
             }
+            // Set the input form (creator) with the list of creators
             document.getElementById("creator").innerHTML = str;
         });
     </script>

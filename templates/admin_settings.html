@@ -22,9 +22,9 @@
         <nav>
             <ul class="menu-aside">
                 <!-- To add sidebar items, add more elements here using <li> elements. -->
-                    <li class="menu-item">
-                        <!--  The curly-bracket notation is part of the Jinja2 templating engine. It allows us to dynamically update the HTML webpage with variables from a Python, or some other file. The webpage changes as the variable changes. -->
-                        <!--  In this case, url_for() is a function provided by flask that generates a URL for a specific endpoint. We use the endpoint to create a new organization, @app.route('/new') -->
+                <li class="menu-item">
+                    <!--  The curly-bracket notation is part of the Jinja2 templating engine. It allows us to dynamically update the HTML webpage with variables from a Python, or some other file. The webpage changes as the variable changes. -->
+                    <!--  In this case, url_for() is a function provided by flask that generates a URL for a specific endpoint. We use the endpoint to create a new organization, @app.route('/new') -->
                     <a class="menu-link" href="{{ url_for('tickets') }}"><i
                             class="icon material-icons md-sticky_note_2"></i>
                         <span class="text">Tickets</span>
@@ -120,19 +120,6 @@
                         </div>
                     </div>
                     <br>
-                    <hr class="my-5">
-                    <div class="row" style="max-width:920px">
-                        <div class="col-md">
-                            <!-- TODO password changing -->
-                            <article class="box mb-3 bg-light">
-                                <a class="btn float-end btn-light btn-sm" href="#">Change</a>
-                                <h6>Password</h6>
-                                <small class="text-muted d-block" style="width:70%">You can reset or change
-                                    your
-                                    password by clicking here</small>
-                            </article>
-                        </div>
-                    </div>
         </section>
     </main>
     <script>
@@ -152,5 +139,5 @@
         // Declare a variable to track if the edit function is being used
         let editing = false;
     </script>
-    </body>
+</body>
 {% endblock %}

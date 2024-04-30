@@ -55,7 +55,7 @@
     <main class="main-wrap">
         <section class="content-main">
             <div class="content-header">
-                <h2 class="content-title">Manage Organizations</h2>
+                <h2 class="content-title">Add tech users</h2>
             </div>
 
             <div class="card">
@@ -132,23 +132,23 @@
     <!-- Finally, we append the dropdown to the page -->
     <script>
         $.get('{{ url_for("get_orgs") }}', function (data) {
-                let names = []
-                $('org').empty();
-                let orgs = data;
-                let num_entires = Object.keys(orgs).length;
-                for (let i = 0; i < num_entires; ++i) {
-                    let org = orgs[i];
-                    console.log(org);
-                    let name = org['name'];
-                    names.push(name);
-                }
-                var str = ""
-                for (var org of names) {
-                    str += "<option>" + org + "</option>"
-                }
-                console.log(str);
-                document.getElementById("org").innerHTML = str;
-            });
+            let names = []
+            $('org').empty();
+            let orgs = data;
+            let num_entires = Object.keys(orgs).length;
+            for (let i = 0; i < num_entires; ++i) {
+                let org = orgs[i];
+                console.log(org);
+                let name = org['name'];
+                names.push(name);
+            }
+            var str = ""
+            for (var org of names) {
+                str += "<option>" + org + "</option>"
+            }
+            console.log(str);
+            document.getElementById("org").innerHTML = str;
+        });
     </script>
 </body>
 {% endblock %}
