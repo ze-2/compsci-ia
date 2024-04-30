@@ -1,27 +1,40 @@
 {% extends 'layout.html' %}
+<!--  This is a Jinja2 directive that uses inheritance in HTML to inherit code from the file layout.html, which is a barebones page. -->
+<!--  This way, we don't have to write any header comments or any fundamental HTML syntax, and we can get straight to writing code. It's very useful as HTML is a very repetitive language sometimes, and it saves space, reduces complexity and could potential reduce maintainence overhead. -->
 
 {% block title %} Create organization {% endblock %}
+<!--  block title is defined in layout.html, and its a form of polymorphism. It overrides the content of the title block in layout.html but keeps the HTML formatting. -->
 
 {% block body %}
+<!--  The same applies here. The content of this body block will override anything from layout.html but will keep any non-overridden features. -->
+
+<!--   This page is for users with the 'tech' role to create a new organization. It has a sidebar menu and a form with fields to create a new organization (name, email, type)Submission is through a POST request to /add_organization. -->
 
 <body class="aside-mini">
 
     <b class="screen-overlay"></b>
     <aside class="navbar-aside" id="offcanvas_aside">
+        <!--  <aside> is a tag that represents content that is 'tangentially related' to the main page, such as a navbar. The class and id allows us to format it in CSS. -->
+        <!-- The side navbar begin here. -->
         <nav>
             <ul class="menu-aside">
+                <!-- To add sidebar items, add more elements here using <li> elements. -->
                 <li class="menu-item">
+                    <!--  Defines items in the sidebar. -->
                     <a class="menu-link" href="{{ url_for('tickets') }}"><i
                             class="icon material-icons md-sticky_note_2"></i>
                         <span class="text">Tickets</span>
                     </a>
                 </li>
                 <li class="menu-item">
+                    <!--  The curly-bracket notation is part of the Jinja2 templating engine. It allows us to dynamically update the HTML webpage with variables from a Python, or some other file. The webpage changes as the variable changes. -->
+                    <!--  In this case, url_for() is a function provided by flask that generates a URL for a specific endpoint. We use the endpoint to create a new organization, @app.route('/new') -->
                     <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
                         <span class="text">Create new</span>
                     </a>
                 </li>
                 <hr>
+                <!--  The same applies for the below two. Jinja2's templating is used to fill in the href property of the button so that it redirects to the flask endpoint. -->
                 <li class="menu-item active">
                     <a class="menu-link" href="{{ url_for('admin_settings') }}"><i
                             class="icon material-icons md-settings"></i>
@@ -38,6 +51,7 @@
                 <br>
         </nav>
     </aside>
+    <!--  Navbar ends, main page content below -->
     <main class="main-wrap">
         <section class="content-main">
             <div class="content-header">
@@ -45,8 +59,11 @@
             </div>
 
             <div class="card">
+                <!-- 'card' holds the, well, card-like shape that contains the form and the title. More cards can be added and they will stack vertically. -->
                 <div class="card-body">
                     <div class="row gx-5">
+                        <!-- Another section for a side panel, this time in the center of the page integrated with the create organization form. -->
+                        <!-- This panel provides the administrative actions a tech can take, managing their own profile, organizations and users. -->
                         <aside class="col-lg-3 border-end">
                             <nav class="nav nav-pills flex-lg-column mb-4">
                                 <a class="nav-link" aria-current="page" href="{{ url_for('admin_settings') }}">Your
@@ -59,12 +76,15 @@
                                 <a class="nav-link" href="{{ url_for('add_user') }}">Add
                                     Users</a>
                             </nav>
-
                         </aside>
+
+                        <!-- This is the main form for submitting details to create a new organization. -->
                         <div class="col-lg-9">
                             <section class="content-body p-xl-4">
+                                <!-- Form fields start here. -->
                                 <form action="/add_organization" , method="POST">
                                     <section class="content-main">
+                                        <!-- Items in this div appear above the input field. -->
                                         <div class="content-header">
                                             <h2 class="content-title">Create new organization</h2>
                                             <button type="submit" class="btn btn-primary">Create organization</button>
@@ -72,7 +92,10 @@
                                         <div class="card mb-4">
                                             <div class="card-body">
                                                 <div class="mb-4">
+                                                    <!-- The text above the input field -->
                                                     <label class="form-label">Name</label>
+                                                    <!-- The 'suggested' input inside the field. -->
+                                                    <!-- 'required' makes the field mandatory to fill. -->
                                                     <input type="text" placeholder="Name of organization" id="name"
                                                         name="name" class="form-control" required></input>
                                                 </div>
@@ -83,6 +106,7 @@
                                                 </div>
                                                 <div>
                                                     <label for="status" class="form-label">Type</label>
+                                                    <!-- Dropdown menu for selecting whzo the organization is for. -->
                                                     <select class="form-select" name="type" id="type" required>
                                                         <option value="Customer">Customer</option>
                                                         <option value="Service">Service</option>

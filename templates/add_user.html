@@ -103,22 +103,34 @@
         </section>
     </main>
     <script>
+        // Use jQuery to make an HTTP request for the list of organizations
         $.get('{{ url_for("get_orgs") }}', function (data) {
+            // Create an array to store the organization names
             let names = []
+            // Clear the existing list of organizations
             $('org').empty();
+            // Store the data returned from the request
             let orgs = data;
+            // Get the number of organizations
             let num_entires = Object.keys(orgs).length;
+            // Loop through the organizations
             for (let i = 0; i < num_entires; ++i) {
                 let org = orgs[i];
                 console.log(org);
+                // Get the organization name
                 let name = org['name'];
+                // Add the name to the names array
                 names.push(name);
             }
+            // Create an empty string to store the HTML options
             var str = ""
+            // Loop through the names array and create the HTML options
             for (var org of names) {
                 str += "<option>" + org + "</option>"
             }
+            // Log the created string
             console.log(str);
+            // Set the innerHTML of the organization list to the created string
             document.getElementById("org").innerHTML = str;
         });
     </script>

@@ -1,16 +1,30 @@
 {% extends 'layout.html' %}
+<!--  This is a Jinja2 directive that uses inheritance in HTML to inherit code from the file layout.html, which is a barebones page. -->
+<!--  This way, we don't have to write any header comments or any fundamental HTML syntax, and we can get straight to writing code. It's very useful as HTML is a very repetitive language sometimes, and it saves space, reduces complexity and could potential reduce maintainence overhead. -->
 
 {% block title %} Admin settings {% endblock %}
+<!--  block title is defined in layout.html, and its a form of polymorphism. It overrides the content of the title block in layout.html but keeps the HTML formatting. -->
 
 {% block body %}
+<!--  The same applies here. The content of this body block will override anything from layout.html but will keep any non-overridden features. -->
+
+
+<!-- This page is for providing the admin with a way to change the settings of their account. -->
+<!-- They can change their password, their email, their name and their organization. -->
+
 
 <body class="aside-mini">
 
     <b class="screen-overlay"></b>
     <aside class="navbar-aside" id="offcanvas_aside">
+        <!--  <aside> is a tag that represents content that is 'tangentially related' to the main page, such as a navbar. The class and id allows us to format it in CSS. -->
+        <!-- The side navbar begin here. -->
         <nav>
             <ul class="menu-aside">
-                <li class="menu-item">
+                <!-- To add sidebar items, add more elements here using <li> elements. -->
+                    <li class="menu-item">
+                        <!--  The curly-bracket notation is part of the Jinja2 templating engine. It allows us to dynamically update the HTML webpage with variables from a Python, or some other file. The webpage changes as the variable changes. -->
+                        <!--  In this case, url_for() is a function provided by flask that generates a URL for a specific endpoint. We use the endpoint to create a new organization, @app.route('/new') -->
                     <a class="menu-link" href="{{ url_for('tickets') }}"><i
                             class="icon material-icons md-sticky_note_2"></i>
                         <span class="text">Tickets</span>
@@ -38,16 +52,20 @@
                 <br>
         </nav>
     </aside>
+    <!-- Side navbar ends, main page content below -->
     <main class="main-wrap">
         <section class="content-main">
             <div class="content-header">
                 <h2 class="content-title">Settings</h2>
             </div>
             <div class="card">
+                <!-- 'card' holds the, well, card-like shape that contains the form and the title. More cards can be added and they will stack vertically. -->
                 <div class="card-body">
                     <div class="row gx-5">
                         <aside class="col-lg-3 border-end">
                             <nav class="nav nav-pills flex-lg-column mb-4">
+                                <!-- The sidebar within the card itself. -->
+                                <!-- Add elements as <a> and not <li> -->
                                 <a class="nav-link active" aria-current="page"
                                     href="{{ url_for('admin_settings') }}">Your
                                     Profile</a>
@@ -63,10 +81,14 @@
                                     Tech</a>
                             </nav>
                         </aside>
+                        <!-- This is the main form for submitting details to create a new user. -->
                         <div class="col-lg-9">
                             <section class="content-body p-xl-4">
+                                <!-- Form fields start here. -->
                                 <form action="/admin_settings" , method="POST">
+                                    <!-- The row formatting is different from the one used in the add_* pages. -->
                                     <div class="row">
+                                        <!-- Fields -->
                                         <div class="row gx-3">
                                             <div class="col-6  mb-3">
                                                 <label class="form-label">Name</label>
@@ -88,6 +110,7 @@
                                                 <input class="form-control" id="org" type="text" value="Admin" disabled>
                                             </div>
                                 </form>
+                                <!-- Submission buttons -->
                                 <div class="col-lg-6 mt-3 mb-3">
                                     <button class="btn btn-light me-3" onclick="edit()">Edit
                                         profile</button>
@@ -113,16 +136,21 @@
         </section>
     </main>
     <script>
+        // This function is used to remove the read only attribute from the input fields and enable the submit button
         function edit() {
+            // Prevent the default action of the event
             event.preventDefault();
+            // Remove the read only attribute from the input fields
             document.getElementById('org').removeAttribute('readonly');
             document.getElementById('name').removeAttribute('readonly');
             document.getElementById('email').removeAttribute('readonly');
+            // Enable the submit button
             document.getElementById('submit').disabled = false;
             document.getElementById('submit').classList = 'btn btn-primary';
 
         }
+        // Declare a variable to track if the edit function is being used
         let editing = false;
     </script>
-</body>
+    </body>
 {% endblock %}

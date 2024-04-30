@@ -1,22 +1,32 @@
 {% extends 'layout.html' %}
+<!-- This template extends the 'layout.html' template, which contains the common structure and layout of the pages. -->
 
 {% block title %} Manage users {% endblock %}
+<!-- This block sets the title of the page to "Manage tech". It overrides the 'title' block defined in the base template. -->
 
 {% block body %}
+<!-- This block defines the content of the page body. It overrides the 'body' block defined in the base template. -->
+
+<!-- This page is for users with the 'tech' role to manage users with no administrative power. -->
 
 <body class="aside-mini">
 
     <b class="screen-overlay"></b>
     <aside class="navbar-aside" id="offcanvas_aside">
+        <!--  <aside> is a tag that represents content that is 'tangentially related' to the main page, such as a navbar. The class and id allows us to format it in CSS. -->
+        <!-- The side navbar begin here. -->
         <nav>
             <ul class="menu-aside">
                 <li class="menu-item">
+                    <!--  The curly-bracket notation is part of the Jinja2 templating engine. It allows us to dynamically update the HTML webpage with variables from a Python, or some other file. The webpage changes as the variable changes. -->
+                    <!--  In this case, url_for() is a function provided by flask that generates a URL for a specific endpoint. We use the endpoint to create a new organization, @app.route('/new') -->
                     <a class="menu-link" href="{{ url_for('tickets') }}"><i
                             class="icon material-icons md-sticky_note_2"></i>
                         <span class="text">users</span>
                     </a>
                 </li>
                 <li class="menu-item">
+                    <!--  The same applies for the below two. Jinja2's templating is used to fill in the href property of the button so that it redirects to the flask endpoint. -->
                     <a class="menu-link" href="{{ url_for('new') }}"><i class="icon material-icons md-plus"></i>
                         <span class="text">Create new</span>
                     </a>
@@ -38,6 +48,7 @@
                 <br>
         </nav>
     </aside>
+    <!--  Navbar ends, main page content below -->
     <main class="main-wrap">
         <section class="content-main">
             <div class="content-header">

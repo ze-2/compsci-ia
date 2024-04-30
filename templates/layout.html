@@ -1,26 +1,44 @@
 <!DOCTYPE html>
 
+<!--
+    This is the main HTML template for all other pages. It is the base structure
+    for all pages within the application.
+
+    It also includes external dependencies, such as jQuery, Bootstrap, and Material Icons, which provide pre-built components, styling and other useful features.
+
+    The page title is dynamically set using a template block, allowing each page to have its own unique title with the same formatting. The same applies for flash messages.
+-->
+
 <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!-- Add jQuery, Bootstrap, and Material icon CDN links -->
+    <!-- jQuery -->
     <script src="../static/js/jquery-3.5.0.min.js"></script>
+    <!-- Bootstrap -->
     <script src="../static/js/bootstrap.bundle.min.js"></script>
     <link href="../static/bootstrap.css" rel="stylesheet" type="text/css" />
+    <!-- Material icon -->
     <link href="../static/ui.css" rel="stylesheet" type="text/css" />
     <link href="../static/responsive.css" rel="stylesheet" />
     <link rel="stylesheet" href="../static/fonts/material-icon/css/round.css" />
 
     <style>
+        /* Set the default font */
         * {
             font-family: Inter;
         }
     </style>
+    
+    <!-- Set the page title -->
     <title>{% block title %}{% endblock %}</title>
+    <!-- Additional scripts can be added using this template block -->
     {% block script %}{% endblock %}
+
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
+    <!-- Handler for flash messages and their styling -->
     <div>
-
         {% for category, message in messages %}
         <div class="container alert-container p-1">
             <div class="row no-gutters">
@@ -39,6 +57,9 @@
 </head>
 
 {% block body %}{% endblock %}
+<!-- The body element is overriden in all inheriting template files to accomodate their own content -->
+
+<!-- Add the script.js file for custom JavaScript code -->
 <script src="../static/js/script.js"></script>
 
 </html>

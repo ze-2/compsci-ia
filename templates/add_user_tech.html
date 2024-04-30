@@ -1,16 +1,27 @@
 {% extends 'layout.html' %}
+<!--  This is a Jinja2 directive that uses inheritance in HTML to inherit code from the file layout.html, which is a barebones page. -->
+<!--  This way, we don't have to write any header comments or any fundamental HTML syntax, and we can get straight to writing code. It's very useful as HTML is a very repetitive language sometimes, and it saves space, reduces complexity and could potential reduce maintainence overhead. -->
 
 {% block title %} Create user {% endblock %}
+<!--  block title is defined in layout.html, and its a form of polymorphism. It overrides the content of the title block in layout.html but keeps the HTML formatting. -->
 
 {% block body %}
+<!--  The same applies here. The content of this body block will override anything from layout.html but will keep any non-overridden features. -->
+
+<!--  This page is for creating a new user, by users with the 'tech' role. -->
 
 <body class="aside-mini">
 
     <b class="screen-overlay"></b>
     <aside class="navbar-aside" id="offcanvas_aside">
+        <!--  <aside> is a tag that represents content that is 'tangentially related' to the main page, such as a navbar. The class and id allows us to format it in CSS. -->
+        <!-- The side navbar begin here. -->
         <nav>
             <ul class="menu-aside">
+                 <!-- To add sidebar items, add more elements here using <li> elements. -->
                 <li class="menu-item">
+                    <!--  The curly-bracket notation is part of the Jinja2 templating engine. It allows us to dynamically update the HTML webpage with variables from a Python, or some other file. The webpage changes as the variable changes. -->
+                    <!--  In this case, url_for() is a function provided by flask that generates a URL for a specific endpoint. We use the endpoint to create a new organization, @app.route('/new') -->
                     <a class="menu-link" href="{{ url_for('tickets') }}"><i
                             class="icon material-icons md-sticky_note_2"></i>
                         <span class="text">Tickets</span>
@@ -38,6 +49,7 @@
                 <br>
         </nav>
     </aside>
+    <!-- Side navbar ends, main page content below -->
     <main class="main-wrap">
         <section class="content-main">
             <div class="content-header">
@@ -45,10 +57,13 @@
             </div>
 
             <div class="card">
+                <!-- 'card' holds the, well, card-like shape that contains the form and the title. More cards can be added and they will stack vertically. -->
                 <div class="card-body">
                     <div class="row gx-5">
                         <aside class="col-lg-3 border-end">
                             <nav class="nav nav-pills flex-lg-column mb-4">
+                                <!-- The sidebar within the card itself. -->
+                                <!-- Add elements as <a> and not <li> -->
                                 <a class="nav-link" aria-current="page" href="{{ url_for('admin_settings') }}">Your
                                     Profile</a>
                                 <a class="nav-link" href="{{ url_for('manage_organizations') }}">Manage
@@ -60,10 +75,13 @@
                                     Users</a>
                             </nav>
                         </aside>
+                        <!-- This is the main form for submitting details to create a new user. -->
                         <div class="col-lg-9">
                             <section class="content-body p-xl-4">
+                                <!-- Form fields start here. -->
                                 <form action="/add_user" , method="POST">
                                     <section class="content-main">
+                                        <!-- Items in this div appear above the input field. -->
                                         <div class="content-header">
                                             <h2 class="content-title">Create new user</h2>
                                             <button type="submit" class="btn btn-primary">Create user</button>
@@ -71,7 +89,10 @@
                                         <div class="card mb-4">
                                             <div class="card-body">
                                                 <div class="mb-4">
+                                                    <!-- The text above the input field -->
                                                     <label class="form-label">Name</label>
+                                                    <!-- The 'suggested' input inside the field. -->
+                                                    <!-- 'required' makes the field mandatory to fill. -->
                                                     <input type="text" placeholder="Name of user" id="name" name="name"
                                                         class="form-control" required></input>
                                                 </div>
@@ -87,6 +108,7 @@
                                                 </div>
                                                 <div>
                                                     <label for="status" class="form-label">Organization</label>
+                                                    <!-- Dropdown menu for selecting who the organization is for. -->
                                                     <select class="form-select" name="org" id="org" required>
                                                     </select>
                                                 </div>
@@ -100,22 +122,33 @@
         </section>
     </main>
     <script>
+        // Make an AJAX call to the server to get the list of organizations
         $.get('{{ url_for("get_orgs") }}', function (data) {
+            // Create an array to store the names of the organizations
             let names = []
+            // Clear the existing organizations in the HTML
             $('org').empty();
+            // Store the organizations received in the AJAX call in a variable
             let orgs = data;
+            // Get the number of organizations
             let num_entires = Object.keys(orgs).length;
+            // Loop through the organizations
             for (let i = 0; i < num_entires; ++i) {
                 let org = orgs[i];
                 console.log(org);
+                // Get the name of the organization
                 let name = org['name'];
+                // Add the name to the names array
                 names.push(name);
             }
+            // Create an empty string to store the HTML options
             var str = ""
+            // Loop through the names array and create the HTML options
             for (var org of names) {
                 str += "<option>" + org + "</option>"
             }
             console.log(str);
+            // Insert the HTML options into the HTML
             document.getElementById("org").innerHTML = str;
         });
     </script>
